@@ -1,12 +1,14 @@
 package com.company.controller;
 
 import com.company.model.J1;
+import com.company.service.ConvertJsonToJavaClassService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.codemodel.JCodeModel;
 import org.jsonschema2pojo.*;
 import org.jsonschema2pojo.rules.RuleFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +23,8 @@ import java.util.List;
 @RestController
 public class JsonRestController {
 
+    @Autowired
+    private ConvertJsonToJavaClassService convertService;
     /*@PostMapping("/")
     public Map<String,Object> uploadFiles(@RequestParam("files") MultipartFile[] files) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
@@ -32,38 +36,10 @@ public class JsonRestController {
     }*/
 
     @PostMapping("/")
-    public List<String> uploadFiles(@RequestParam("files") MultipartFile[] files) throws IOException {
-        ArrayList<String> jsons = new ArrayList<>();
-        for (int i = 0; i < files.length; i++) {
-            jsons.add(new String(files[i].getBytes()));
-        }
+    public String uploadFiles(@RequestParam("files") MultipartFile[] files) throws IOException {
+        convertService.execute(files);
         ObjectMapper mapper = new ObjectMapper();
-        convertJsonToJavaClass(jsons.get(0), new File("./src//main//java"), "com.company.model", "J1");
-        convertJsonToJavaClass(jsons.get(1), new File("./src//main//java"), "com.company.model", "J2");
-        J1 j1 = mapper.readValue(jsons.get(0), J1.class);
-        System.out.println(j1);
-        return jsons;
-    }
-
-    public void convertJsonToJavaClass(String inputJsonUrl, File outputJavaClassDirectory, String packageName, String javaClassName)
-            throws IOException {
-        JCodeModel jcodeModel = new JCodeModel();
-
-        GenerationConfig config = new DefaultGenerationConfig() {
-            @Override
-            public boolean isGenerateBuilders() {
-                return true;
-            }
-
-            @Override
-            public SourceType getSourceType() {
-                return SourceType.JSON;
-            }
-        };
-
-        SchemaMapper mapper = new SchemaMapper(new RuleFactory(config, new Jackson2Annotator(config), new SchemaStore()), new SchemaGenerator());
-        mapper.generate(jcodeModel, javaClassName, packageName, inputJsonUrl);
-
-        jcodeModel.build(outputJavaClassDirectory);
+        J1 j1 = mapper.readValue(new String(files[0].getBytes()), J1.class);
+        return j1.toString();
     }
 }
