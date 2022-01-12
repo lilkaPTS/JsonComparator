@@ -1,5 +1,6 @@
 package com.company.controller;
 
+import com.company.model.J1;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,6 +20,17 @@ import java.util.List;
 
 @RestController
 public class JsonRestController {
+
+    /*@PostMapping("/")
+    public Map<String,Object> uploadFiles(@RequestParam("files") MultipartFile[] files) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String,Object> first = mapper.readValue(files[0].getBytes(), new TypeReference<HashMap<String, Object>>() {});
+        Map<String,Object> second = mapper.readValue(files[1].getBytes(), new TypeReference<HashMap<String, Object>>() {});
+        JsonObject jsonObject = mapper.readValue(files[0].getBytes(), JsonObject.class);
+        System.out.println(jsonObject);
+        return first;
+    }*/
+
     @PostMapping("/")
     public List<String> uploadFiles(@RequestParam("files") MultipartFile[] files) throws IOException {
         ArrayList<String> jsons = new ArrayList<>();
@@ -26,9 +38,10 @@ public class JsonRestController {
             jsons.add(new String(files[i].getBytes()));
         }
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonNode1 = mapper.readTree(jsons.get(0));
-        JsonNode jsonNode2 = mapper.readTree(jsons.get(1));
-        convertJsonToJavaClass(jsonNode1.toString(), new File("C://Users//jajak//Desktop//Netcracker//Java//JsonParser//src//main//java//com//company"), "model", "fff");
+        convertJsonToJavaClass(jsons.get(0), new File("./src//main//java"), "com.company.model", "J1");
+        convertJsonToJavaClass(jsons.get(1), new File("./src//main//java"), "com.company.model", "J2");
+        J1 j1 = mapper.readValue(jsons.get(0), J1.class);
+        System.out.println(j1);
         return jsons;
     }
 
