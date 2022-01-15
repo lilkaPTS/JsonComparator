@@ -1,0 +1,144 @@
+{
+    "metadata": { 																			// object, mandatory
+        "description": { 																	// object, mandatory
+            "version": 2 																	// integer, mandatory
+        },
+        "application": { 																	// object, mandatory
+            "name": "application_name" 														// string, mandatory
+        }
+    },
+    "services": [ 																			// array, mandatory, can be empty
+        { 																					// object, optional
+            "service-short-name": "TEST", 													// string, optional
+            "service_name": "test-service-1", 												// string, mandatory
+            "artifact_type": "zip",															// string, mandatory
+            "docker_registry": "docker.io:12345", 											//  string, mandatory
+            "docker_image_name": "busybox", 												// string, mandatory 
+            "docker_tag": "1.33.0", 														// string, mandatory
+            "force": true, 																	// boolean, optional
+            "github_repository": "https://github.com/mirror/busybox", 						// string, optional
+            "github_branch": "master", 														// string, optional
+            "github_hash": "qwerty123456789qwerty123456789qwerty111q", 						// string, optional
+            "hashes": { 																	// object, mandatory
+                "sha1": "749d65718qwec394eae890e7137898419b48b021", 						// string, mandatory
+                "sha256": "5123772326b5821234a130987930e1c46cvbnf10ce768199d56e4b874dfghjkl" // string, mandatory
+            }
+        }
+    ],
+    "artifacts": [ 																					// array, mandatory, can be empty 
+        { 																							// object, optional
+            "mvn": [ 																				// array, mandatory 
+                { 																					// object, mandatory 
+                    "groupId": "log4j", 															// string, mandatory - groupId of maven artifact
+                    "artifactId": "log4j", 															// string, mandatory - artifactId of maven artifact
+                    "version": "1.2.17", 															// string, mandatory - version of maven artifact
+                    "service_name": "test-service-1", 												// string, optional
+                    "classifier": "sources", 														// string, optional - classifier of maven artifact
+                    "mvn_type": "pom", 																// string, mandatory - extension of maven artifact
+                    "mvn_repository": "https://repo1.maven.org/maven2", 							// string, mandatory
+                    "hashes": { 																	// object, mandatory
+                        "sha1": "1123456f0f1erc9791fgfc5928c0d89a0bf31ae9", 						// string, mandatory
+                        "sha256": "zxc34f60ffb0265ecgiuy2f2cbd2a4763528fef2e1a752465ca3fd5a01bf3513" // string, mandatory
+                    }
+                }, {
+                    "groupId": "log4j",
+                    "artifactId": "log4j",
+                    "version": "1.2.17",
+                    "service_name": "test-service-1",
+                    "mvn_type": "jar",
+                    "mvn_repository": "https://repo1.maven.org/maven2",
+                    "hashes": {
+                        "sha1": "tei2471b518c3882a29dce746579875dd13f3fty",
+                        "sha256": "hfyt975s4444f71f2ae76dfab1c51bf3cc9e55bi89d4e73944f54d8ed56ad28c"
+                    }
+                }, {
+                    "groupId": "junit",
+                    "artifactId": "junit",
+                    "version": "4.12",
+                    "classifier": "sources", 
+                    "mvn_type": "jar",
+                    "mvn_repository": "https://repo1.maven.org/maven2",
+                    "hashes": {
+                        "sha1": "a6c32b40bf3d76eca54e3c601e5d1470c86fcdfa",
+                        "sha256": "9f43fea92033ad82bcad2ae44cec5c82abc9d6ee4b095cab921d11ead98bf2ff"
+                    }
+                }, {
+                    "groupId": "org.hamcrest",
+                    "artifactId": "hamcrest-core",
+                    "version": "1.3",
+                    "mvn_type": "jar",
+                    "mvn_repository": "https://repo1.maven.org/maven2",
+                    "hashes": {
+                        "sha1": "42a25dc3219429f0e5d060061f71acb49bf010a0",
+                        "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+                    }
+                }, {
+                    "groupId": "org.hamcrest",
+                    "artifactId": "hamcrest-core",
+                    "version": "1.3",
+                    "mvn_type": "pom",
+                    "mvn_repository": "https://repo1.maven.org/maven2",
+                    "hashes": {
+                        "sha1": "872e413497b906e7c9fa85ccc96046c5d1ef7ece",
+                        "sha256": "fde386a7905173a1b103de6ab820727584b50d0e32282e2797787c20a64ffa93"
+                    }
+                }
+            ],
+            "target_repository": "mvn" 																// string, mandatory
+        }, {
+            "service-short-name": "TEST_2",															// string, optional
+            "service_name": "node-v0.6.11.tar.gz",													// string optional
+            "hashes": { 																			// object, mandatory
+                "sha1": "5t8a614b22f1806f53ed68b1e68a2d3849130c15", 								// string, mandatory
+                "sha256": "e5nbyucce66bf62e142cf3430c137ac5f0c82b81f3f6099457a523afe3375916" 		// string, mandatory
+            },
+            "file": [ 																				// array, mandatory - list of direct urls. always contains only one element
+                "https://nodejs.org/dist/node-v0.6.11.tar.gz" 										// string, mandatory - direct url of artifact
+            ],
+            "target_repository": "file" 															// string, mandatory
+        }, {
+            "service_name": "jenkins-2.223", 														// string optional
+            "hashes": { 																			// object, mandatory
+                "sha1": "fun7f57f7ff89adcff04c223a01cd06ab0932c21", 								// string, mandatory
+                "sha256": "3a38b40bf1b906146f6d330b8ad6211d9a50a9a97b16f92b5e6ce40b93a69238" 		// string, mandatory
+            },
+            "file": [
+                "http://ftp-nyc.osuosl.org/pub/jenkins/osx/jenkins-2.223.pkg"						// string, mandatory
+            ],
+            "target_repository": "file" 															// string, mandatory
+        }
+    ],
+    "script": [ 																					// array, mandatory, can be empty
+        { 																							// object, optional
+            "service-short-name": "mongocli", 														// string, optional
+            "start-point": "start-point.sh", 														// string, optional
+            "end-point": "end-point.sh", 															// string, optional
+            "script_name": "some_script_name", 														// string, mandatory
+            "hashes": { 																			// object, mandatory
+                "sha1": "87jf7b9f6055bd924fd83e63ab1e0f16a57680dd", 								// string, mandatory
+                "sha256": "4di75ghj3d976b05b30ce3ce683b561d2bc726eb183e089dd80c8c9ae0ddb195" 		// string, mandatory
+            },
+            "url": "https://fastdl.mongodb.org/mongocli/mongocli_1.12.0_windows_x86_64.zip" 		// string, mandatory - direct url of archive with script
+        }
+    ],
+    "rpm": { 																						// object, optional - describes rpm archive
+        "url": "http://mirror.centos.org/centos/7/os/x86_64/Packages/PyQt4-4.10.1-13.el7.i686.rpm", // string, mandatory - direct url of rpm archive
+        "rpm_repository_name": "some_rpm_repository", 												// string, mandatory
+        "hashes": { 																				// object, mandatory
+            "sha1": "bft63mn2a79c45903d4edcf9877fa7201513c23e", 									// string, mandatory
+            "sha256": "25dy68e5044c719aa498d53260f84a0a0e344930b682af09ecb8481b63438917" 			// string, mandatory
+        },
+        "service-short-name": "one" 																// string optional
+    },
+    "parameters": { 																				// object, mandatory, can be empty
+        "common": { 																				// object, optional
+            "some-param": "test", 																	// string, mandatory - parameter value
+            "some-other-param": "test2"
+        },
+        "services": { 																				// object, optional
+            "service_name": {																		// string, mandatory
+                "some-third-param": "test3"															// string, mandatory
+            }
+        }
+    }
+}
