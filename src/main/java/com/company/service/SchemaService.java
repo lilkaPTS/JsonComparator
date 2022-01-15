@@ -19,7 +19,7 @@ public class SchemaService {
 
     public void schemaGenerate(Class<?> clazz) throws IOException {
         JacksonModule jacksonModule = new JacksonModule(JacksonOption.RESPECT_JSONPROPERTY_REQUIRED);
-        SchemaGeneratorConfigBuilder configBuilder = new SchemaGeneratorConfigBuilder(SchemaVersion.DRAFT_7, OptionPreset.PLAIN_JSON)
+        SchemaGeneratorConfigBuilder configBuilder = new SchemaGeneratorConfigBuilder(SchemaVersion.DRAFT_2019_09, OptionPreset.PLAIN_JSON)
                 .with(jacksonModule);
         SchemaGeneratorConfig config = configBuilder.build();
         SchemaGenerator generator = new SchemaGenerator(config);
