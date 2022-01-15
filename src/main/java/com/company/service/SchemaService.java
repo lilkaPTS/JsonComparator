@@ -1,18 +1,15 @@
 package com.company.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.victools.jsonschema.generator.*;
 import com.github.victools.jsonschema.module.jackson.JacksonModule;
 import com.github.victools.jsonschema.module.jackson.JacksonOption;
-import org.everit.json.schema.Schema;
-import org.everit.json.schema.loader.SchemaLoader;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import com.networknt.schema.*;
 import org.springframework.stereotype.Service;
 
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.util.Set;
 
 @Service
 public class SchemaService {
@@ -27,13 +24,15 @@ public class SchemaService {
         FileWriter writer = new FileWriter("1.json", false);
         writer.write(jsonSchema.toString());
         writer.flush();
-        givenInvalidInput_whenValidating_thenInvalid();
+        getSchemaErrors();
     }
 
-    public void givenInvalidInput_whenValidating_thenInvalid() throws IOException {
-        JSONObject jsonSchema = new JSONObject(new JSONTokener(new FileInputStream("1.json")));
-        JSONObject jsonObject = new JSONObject(new JSONTokener(new FileInputStream("11.json")));
-        Schema schemaValidator = SchemaLoader.load(jsonSchema);
-        schemaValidator.validate(jsonObject);
+    public void getSchemaErrors() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V201909);
+        JsonSchema schema = factory.getSchema(new FileInputStream("1.json"));
+        JsonNode node = mapper.readTree(new File("11.json"));
+        Set<ValidationMessage> errors = schema.validate(node);
+        errors.forEach(System.out::println);
     }
 }
