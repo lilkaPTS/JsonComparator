@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "type": "object",
+  "properties": {
+    "file": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "hashes": {
+      "type": "object",
+      "properties": {
+        "sha1": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sha1",
+        "sha256"
+      ]
+    },
+    "service-short-name": {
+      "type": "string"
+    },
+    "service_name": {
+      "type": "string"
+    },
+    "target_repository": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "file",
+    "hashes",
+    "target_repository"
+  ]
+}
