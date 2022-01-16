@@ -1,2 +1,4 @@
 https://mvnrepository.com/artifact/com.networknt/json-schema-validator/1.0.65 - check
 try auto generate POJO based v2-structure.txt
+Схемы объектов артефактов
+2022-01-17 - waiting for a fix -> finish POJO
