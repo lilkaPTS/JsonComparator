@@ -11,7 +11,7 @@ import java.util.ArrayList;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArtifactObject2 implements Artifacts {
+public class ArtifactObject2 {
 
     @JsonProperty(value = "service-short-name")
     private String serviceShortName;

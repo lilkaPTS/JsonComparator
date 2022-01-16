@@ -11,7 +11,7 @@ import java.util.ArrayList;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArtifactObject1 implements Artifacts{
+public class ArtifactObject1 {
     @JsonProperty(value = "mvn", required = true)
     @NotEmpty
     private ArrayList<Mvn> mvn;

@@ -8,9 +8,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Hashes {
-    @JsonProperty(value = "sha1",required = true)
-    private String sha1;
-    @JsonProperty(value = "sha256",required = true)
-    private String sha256;
+public class Parameter {
+    @JsonProperty(value = "common")
+    private Common common;
+    @JsonProperty(value = "services")
+    private Services services;
 }

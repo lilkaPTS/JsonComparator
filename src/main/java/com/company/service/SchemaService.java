@@ -16,7 +16,7 @@ import java.util.Set;
 @Service
 public class SchemaService {
 
-    public void schemaGenerate(Class<?> clazz) throws IOException {
+    public void schemaGenerate(Class<?> clazz, String pathFile) throws IOException {
         JacksonModule jacksonModule = new JacksonModule(JacksonOption.RESPECT_JSONPROPERTY_REQUIRED);
         JavaxValidationModule javaxValidationModule = new JavaxValidationModule();
         AddonModule addonModule= new AddonModule();
@@ -25,19 +25,16 @@ public class SchemaService {
         SchemaGeneratorConfig config = configBuilder.build();
         SchemaGenerator generator = new SchemaGenerator(config);
         JsonNode jsonSchema = generator.generateSchema(clazz);
-        FileWriter writer = new FileWriter("1.json", false);
+        FileWriter writer = new FileWriter(pathFile, false);
         writer.write(jsonSchema.toString());
         writer.flush();
-        getSchemaErrors();
     }
 
-    public void getSchemaErrors() throws IOException {
+    public Set<ValidationMessage> getSchemaErrors(String schemaFilePath, String nodeFilePath) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V201909);
-        JsonSchema schema = factory.getSchema(new FileInputStream("2.json"));
-        JsonNode node = mapper.readTree(new File("22.json"));
-        Set<ValidationMessage> errors = schema.validate(node);
-        errors.forEach(System.out::println);
-        System.out.println("\n");
+        JsonSchema schema = factory.getSchema(new FileInputStream(schemaFilePath));
+        JsonNode node = mapper.readTree(new File(nodeFilePath));
+        return schema.validate(node);
     }
 }

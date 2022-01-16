@@ -40,52 +40,11 @@
                         "sha1": "1123456f0f1erc9791fgfc5928c0d89a0bf31ae9", 						// string, mandatory
                         "sha256": "zxc34f60ffb0265ecgiuy2f2cbd2a4763528fef2e1a752465ca3fd5a01bf3513" // string, mandatory
                     }
-                }, {
-                    "groupId": "log4j",
-                    "artifactId": "log4j",
-                    "version": "1.2.17",
-                    "service_name": "test-service-1",
-                    "mvn_type": "jar",
-                    "mvn_repository": "https://repo1.maven.org/maven2",
-                    "hashes": {
-                        "sha1": "tei2471b518c3882a29dce746579875dd13f3fty",
-                        "sha256": "hfyt975s4444f71f2ae76dfab1c51bf3cc9e55bi89d4e73944f54d8ed56ad28c"
-                    }
-                }, {
-                    "groupId": "junit",
-                    "artifactId": "junit",
-                    "version": "4.12",
-                    "classifier": "sources", 
-                    "mvn_type": "jar",
-                    "mvn_repository": "https://repo1.maven.org/maven2",
-                    "hashes": {
-                        "sha1": "a6c32b40bf3d76eca54e3c601e5d1470c86fcdfa",
-                        "sha256": "9f43fea92033ad82bcad2ae44cec5c82abc9d6ee4b095cab921d11ead98bf2ff"
-                    }
-                }, {
-                    "groupId": "org.hamcrest",
-                    "artifactId": "hamcrest-core",
-                    "version": "1.3",
-                    "mvn_type": "jar",
-                    "mvn_repository": "https://repo1.maven.org/maven2",
-                    "hashes": {
-                        "sha1": "42a25dc3219429f0e5d060061f71acb49bf010a0",
-                        "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
-                    }
-                }, {
-                    "groupId": "org.hamcrest",
-                    "artifactId": "hamcrest-core",
-                    "version": "1.3",
-                    "mvn_type": "pom",
-                    "mvn_repository": "https://repo1.maven.org/maven2",
-                    "hashes": {
-                        "sha1": "872e413497b906e7c9fa85ccc96046c5d1ef7ece",
-                        "sha256": "fde386a7905173a1b103de6ab820727584b50d0e32282e2797787c20a64ffa93"
-                    }
                 }
             ],
             "target_repository": "mvn" 																// string, mandatory
-        }, {
+        },
+        {
             "service-short-name": "TEST_2",															// string, optional
             "service_name": "node-v0.6.11.tar.gz",													// string optional
             "hashes": { 																			// object, mandatory
@@ -96,7 +55,8 @@
                 "https://nodejs.org/dist/node-v0.6.11.tar.gz" 										// string, mandatory - direct url of artifact
             ],
             "target_repository": "file" 															// string, mandatory
-        }, {
+        },
+        {
             "service_name": "jenkins-2.223", 														// string optional
             "hashes": { 																			// object, mandatory
                 "sha1": "fun7f57f7ff89adcff04c223a01cd06ab0932c21", 								// string, mandatory
