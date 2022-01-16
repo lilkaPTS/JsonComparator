@@ -29,10 +29,14 @@ public class FileService {
         }
         return content;
     }
-    public void setFileWithContent(String filePath, String content) throws IOException {
-        FileWriter writer = new FileWriter(filePath, false);
-        writer.write(content);
-        writer.flush();
+    public void setFileWithContent(String filePath, String content) {
+        try {
+            FileWriter writer = new FileWriter(filePath, false);
+            writer.write(content);
+            writer.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
