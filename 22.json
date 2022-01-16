@@ -27,16 +27,6 @@
   ],
   "artifacts": [
     {
-      "service_name": "jenkins-2.223",
-      "hashes": {
-        "sha1": "fun7f57f7ff89adcff04c223a01cd06ab0932c21",
-        "sha256": "3a38b40bf1b906146f6d330b8ad6211d9a50a9a97b16f92b5e6ce40b93a69238"
-      },
-      "file": [
-        "http://ftp-nyc.osuosl.org/pub/jenkins/osx/jenkins-2.223.pkg"
-      ]
-    },
-    {
       "mvn": [
         {
           "version": "1.2.17",
@@ -63,6 +53,24 @@
         "http://ftp-nyc.osuosl.org/pub/jenkins/osx/jenkins-2.223.pkg"
       ],
       "target_repository": "file"
+    },
+    {
+      "mvn": [
+        {
+          "version": "1.2.17",
+          "groupId": "log4j",
+          "artifactId": "log4j",
+          "service_name": "test-service-1",
+          "classifier": "sources",
+          "mvn_type": "pom",
+          "mvn_repository": "https://repo1.maven.org/maven2",
+          "hashes": {
+            "sha1": "1123456f0f1erc9791fgfc5928c0d89a0bf31ae9",
+            "sha256": "zxc34f60ffb0265ecgiuy2f2cbd2a4763528fef2e1a752465ca3fd5a01bf3513"
+          }
+        }
+      ],
+      "target_repository": "mvn"
     }
   ]
 }

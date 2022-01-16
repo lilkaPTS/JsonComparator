@@ -6,32 +6,26 @@ import lombok.NonNull;
 
 @Data
 public class Services {
-    @JsonProperty("service-short-name")
+    @JsonProperty(value = "service-short-name")
     private String serviceShortName;
-    @JsonProperty("service_name")
-    @NonNull
+    @JsonProperty(value = "service_name",required = true)
     private String serviceName;
-    @JsonProperty("artifact_type")
-    @NonNull
+    @JsonProperty(value ="artifact_type",required = true)
     private String artifactType;
-    @JsonProperty("docker_registry")
-    @NonNull
+    @JsonProperty(value ="docker_registry",required = true)
     private String dockerRegistry;
-    @JsonProperty("docker_image_name")
-    @NonNull
+    @JsonProperty(value ="docker_image_name",required = true)
     private String dockerImageName;
-    @JsonProperty("docker_tag")
-    @NonNull
+    @JsonProperty(value ="docker_tag",required = true)
     private String dockerTag;
-    @JsonProperty("force")
+    @JsonProperty(value ="force")
     private boolean force;
-    @JsonProperty("github_repository")
+    @JsonProperty(value ="github_repository")
     private String gitRepository;
-    @JsonProperty("github_branch")
+    @JsonProperty(value ="github_branch")
     private String githubBranch;
-    @JsonProperty("github_hash")
+    @JsonProperty(value ="github_hash")
     private String githubBash;
-    @JsonProperty("hashes")
-    @NonNull
+    @JsonProperty(value ="hashes",required = true)
     private Hashes hashes;
 }

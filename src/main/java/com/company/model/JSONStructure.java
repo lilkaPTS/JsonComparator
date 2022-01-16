@@ -2,6 +2,7 @@ package com.company.model;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,5 +18,6 @@ public class JSONStructure {
     private Metadata metadata;
     @JsonProperty(value = "services",required = true)
     private ArrayList<Services> services;
-
+    @JsonProperty(value = "artifacts",required = true)
+    private ArrayList<Artifacts> artifacts;
 }
