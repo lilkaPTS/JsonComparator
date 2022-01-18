@@ -24,7 +24,7 @@ public class JSONStructure {
     @JsonProperty(value = "script",required = true)
     private ArrayList<Script> script;
     @JsonProperty(value = "rpm")
-    private Rpm rpm;
+    private ArrayList<Rpm> rpm;
     @JsonProperty(value = "parameters",required = true)
     private Parameter parameters;
 

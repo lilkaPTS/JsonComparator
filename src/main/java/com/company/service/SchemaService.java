@@ -17,7 +17,7 @@ public class SchemaService {
     public JsonNode getJsonSchema(Class<?> clazz) {
         JacksonModule jacksonModule = new JacksonModule(JacksonOption.RESPECT_JSONPROPERTY_REQUIRED);
         JavaxValidationModule javaxValidationModule = new JavaxValidationModule();
-        AddonModule addonModule= new AddonModule();
+        AddonModule addonModule= new AddonModule(); //2022-01-17 - dont use
         SchemaGeneratorConfigBuilder configBuilder = new SchemaGeneratorConfigBuilder(SchemaVersion.DRAFT_2019_09, OptionPreset.PLAIN_JSON)
                 .with(jacksonModule).with(javaxValidationModule).with(addonModule);
         SchemaGeneratorConfig config = configBuilder.build();
