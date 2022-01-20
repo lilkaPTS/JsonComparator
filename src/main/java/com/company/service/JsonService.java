@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
 @Service
-public class JSONService {
+public class JsonService {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -19,7 +19,7 @@ public class JSONService {
         return MAPPER.nullNode();
     }
 
-    public String getJSONString(Object value) {
+    public String getJsonString(Object value) {
         String result = "";
         try {
             result = MAPPER.writeValueAsString(value);

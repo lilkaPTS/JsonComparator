@@ -24,7 +24,7 @@ public class ConfigFile {
     }
 
     //POJO -> Model
-    public ConfigFile(JSONStructure jsonStructure) {
+    public ConfigFile(JsonStructure jsonStructure) {
 
     }
 

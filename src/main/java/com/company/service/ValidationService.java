@@ -11,7 +11,7 @@ public class ValidationService {
     @Autowired
     private FileService fileService;
     @Autowired
-    private JSONService jsonService;
+    private JsonService jsonService;
 
     public String getErrors(MultipartFile inputFile) {
         //check ArtifactObject1-2 and Parameter.Services.ServiceName maps

@@ -13,7 +13,7 @@ import java.util.ArrayList;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class JSONStructure {
+public class JsonStructure {
 
     @JsonProperty(value = "metadata", required = true)
     private Metadata metadata;
