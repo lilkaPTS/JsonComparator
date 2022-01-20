@@ -8,6 +8,7 @@ import java.util.Objects;
 public class ConfigFile {
     private Metadata metadata;
     private ArrayList<Service> services;
+    //ArtifactObject is marker interface because Jackson can not define ArtifactObject realisation without additional field in JSON
     private ArrayList<ArtifactObject> artifacts;
     private ArrayList<Script> script;
     private ArrayList<Rpm> rpm;
@@ -22,6 +23,7 @@ public class ConfigFile {
         this.parameters = parameters;
     }
 
+    //POJO -> Model
     public ConfigFile(JSONStructure jsonStructure) {
 
     }
