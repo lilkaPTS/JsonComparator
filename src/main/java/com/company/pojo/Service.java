@@ -1,8 +1,7 @@
-package com.company.model;
+package com.company.pojo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import lombok.NonNull;
 
 @Data
 public class Service {

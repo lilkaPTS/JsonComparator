@@ -1,16 +1,16 @@
-package com.company.model;
+package com.company.pojo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Parameter {
-    @JsonProperty(value = "common")
-    private Common common;
-    @JsonProperty(value = "services")
-    private Services services;
+public class Application {
+    @JsonProperty(value = "name",required = true)
+    private String name;
 }

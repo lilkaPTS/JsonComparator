@@ -9,20 +9,20 @@
     },
     "services": [
           {
-            "service-short-name": "TEST_2",
-            "service_name": "test-service-2",
-            "artifact_type": "zip",
-            
-            "docker_image_name": "busybox3", 
-            "docker_tag": "1.33.0",
-            "force": false,
-            "github_repository": "https://github.com/mirror/busybox",
-            "github_branch": "master",
-            "github_hash": "qwerty123456789qwerty123456789qwerty111q1",
-            "hashes": {
-                "sha1": "749d65718qwec394eae890e7137898419b48b021",
-                "sha256": "5123772326b5821234a130987930e1c46cvbnf10ce768199d56e4b874dfghjkl"
-            }
+              "service-short-name": "TEST_2",
+              "service_name": "test-service-2",
+              "artifact_type": "zip",
+
+              "docker_image_name": "busybox3",
+              "docker_tag": "1.33.0",
+              "force": false,
+              "github_repository": "https://github.com/mirror/busybox",
+              "github_branch": "master",
+              "github_hash": "qwerty123456789qwerty123456789qwerty111q1",
+              "hashes": {
+                  "sha1": "749d65718qwec394eae890e7137898419b48b021",
+                  "sha256": "5123772326b5821234a130987930e1c46cvbnf10ce768199d56e4b874dfghjkl"
+              }
         },
         {
             "service_name": "test-service-2",
@@ -188,12 +188,11 @@
                 "some-third-param": "test4",															
 				"some-third-param-3": "test8"															
             },
-			"service_name_2": {		
-"some-third-param-5": "test5",			
+			"service_name_2": {
                 "some-third-param-2": "test2"															
             },
-			"service_name": {																		
-                "some-third-param-3": "test4"															
+			"service_name": {
+                "some-third-param-3": "test4"
             }
         }
     }

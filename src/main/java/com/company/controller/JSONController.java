@@ -1,9 +1,12 @@
 package com.company.controller;
 
-import com.company.model.JSONStructure;
+import com.company.pojo.JSONStructure;
 import com.company.service.FileService;
 import com.company.service.JSONService;
 import com.company.service.SchemaService;
+import com.company.service.ValidationService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,9 +23,18 @@ public class JSONController {
     private FileService fileService;
     @Autowired
     private JSONService jsonService;
+    @Autowired
+    private ValidationService validationService;
+
     @GetMapping("/")
-    public String getStartPage() {
-        schemaService.getSchemaErrors(schemaService.getJsonSchema(JSONStructure.class), jsonService.getJsonNode(fileService.getFileContent("22.json"))).forEach(System.out::println);
+    public String getStartPage() throws JsonProcessingException {
+        schemaService.getSchemaErrors(schemaService.getJsonSchema(JSONStructure.class), jsonService.getJsonNode(fileService.getFileContent("./src/main/resources/v2_json_sample.json"))).forEach(System.out::println);
+        fileService.setFileWithContent("JSONSchema.json", schemaService.getJsonSchema(JSONStructure.class).toString());
+        ObjectMapper mapper = new ObjectMapper();
+        JSONStructure jsonStructure = mapper.readValue(fileService.getFileContent("./src/main/resources/v2_json_sample.json"), JSONStructure.class);
+        System.out.println(jsonStructure.getParameters().getServices());
+        String str = mapper.writeValueAsString(jsonStructure);
+        System.out.println(str);
         return "start";
     }
     @PostMapping("/")

@@ -1,5 +1,6 @@
 package com.company.model;
 
+import com.company.pojo.Mvn;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,7 +12,7 @@ import java.util.ArrayList;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArtifactObject1 {
+public class ArtifactObject1 implements ArtifactObject {
     @JsonProperty(value = "mvn", required = true)
     @NotEmpty
     private ArrayList<Mvn> mvn;

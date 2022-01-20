@@ -1,5 +1,6 @@
 package com.company.model;
 
+import com.company.pojo.Hashes;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,7 +12,7 @@ import java.util.ArrayList;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArtifactObject2 {
+public class ArtifactObject2 implements ArtifactObject {
 
     @JsonProperty(value = "service-short-name")
     private String serviceShortName;
