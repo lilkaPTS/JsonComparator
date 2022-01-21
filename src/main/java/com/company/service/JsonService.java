@@ -28,4 +28,8 @@ public class JsonService {
         }
         return result;
     }
+
+    public String getJsonPrettyString(Object value) {
+        return getJsonNode(getJsonString(value)).toPrettyString();
+    }
 }
