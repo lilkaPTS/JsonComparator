@@ -30,7 +30,8 @@
             "required": [
               "sha1",
               "sha256"
-            ]
+            ],
+            "additionalProperties": false
           },
           "mvn_repository": {
             "type": "string"
@@ -52,7 +53,8 @@
           "mvn_repository",
           "mvn_type",
           "version"
-        ]
+        ],
+        "additionalProperties": false
       }
     },
     "target_repository": {
@@ -62,5 +64,6 @@
   "required": [
     "mvn",
     "target_repository"
-  ]
+  ],
+  "additionalProperties": false
 }

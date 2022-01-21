@@ -1,1 +1,227 @@
-{"$schema":"https://json-schema.org/draft/2019-09/schema","$defs":{"Hashes":{"type":"object","properties":{"sha1":{"type":"string"},"sha256":{"type":"string"}},"required":["sha1","sha256"]},"Map(String,String)":{"type":"object"}},"type":"object","properties":{"artifacts":{"type":"array","items":{"type":"object"}},"metadata":{"type":"object","properties":{"application":{"type":"object","properties":{"name":{"type":"string"}},"required":["name"]},"description":{"type":"object","properties":{"version":{"type":"integer"}},"required":["version"]}},"required":["application","description"]},"parameters":{"type":"object","properties":{"common":{"type":"object","properties":{"some-else-param":{"type":"string"},"some-other-param":{"type":"string"},"some-param":{"type":"string"}},"required":["some-param"]},"services":{"type":"object","properties":{"service_name":{"$ref":"#/$defs/Map(String,String)"},"service_name_1":{"$ref":"#/$defs/Map(String,String)"},"service_name_2":{"$ref":"#/$defs/Map(String,String)"}},"required":["service_name","service_name_1","service_name_2"]}}},"rpm":{"type":"array","items":{"type":"object","properties":{"hashes":{"$ref":"#/$defs/Hashes"},"rpm_repository_name":{"type":"string"},"service-short-name":{"type":"string"},"url":{"type":"string"}},"required":["hashes","rpm_repository_name","url"]}},"script":{"type":"array","items":{"type":"object","properties":{"end-point":{"type":"string"},"hashes":{"$ref":"#/$defs/Hashes"},"script_name":{"type":"string"},"service-short-name":{"type":"string"},"start-point":{"type":"string"},"url":{"type":"string"}},"required":["hashes","script_name","url"]}},"services":{"type":"array","items":{"type":"object","properties":{"artifact_type":{"type":"string"},"docker_image_name":{"type":"string"},"docker_registry":{"type":"string"},"docker_tag":{"type":"string"},"force":{"type":"boolean"},"github_branch":{"type":"string"},"github_hash":{"type":"string"},"github_repository":{"type":"string"},"hashes":{"$ref":"#/$defs/Hashes"},"service-short-name":{"type":"string"},"service_name":{"type":"string"}},"required":["artifact_type","docker_image_name","docker_registry","docker_tag","hashes","service_name"]}}},"required":["artifacts","metadata","parameters","script","services"]}
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$defs": {
+    "Hashes": {
+      "type": "object",
+      "properties": {
+        "sha1": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sha1",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "Map(String,String)": {
+      "type": "object"
+    }
+  },
+  "type": "object",
+  "properties": {
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "application": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        "description": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "version"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "application",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "common": {
+          "type": "object",
+          "properties": {
+            "some-else-param": {
+              "type": "string"
+            },
+            "some-other-param": {
+              "type": "string"
+            },
+            "some-param": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "some-param"
+          ],
+          "additionalProperties": false
+        },
+        "services": {
+          "type": "object",
+          "properties": {
+            "service_name": {
+              "$ref": "#/$defs/Map(String,String)"
+            },
+            "service_name_1": {
+              "$ref": "#/$defs/Map(String,String)"
+            },
+            "service_name_2": {
+              "$ref": "#/$defs/Map(String,String)"
+            }
+          },
+          "required": [
+            "service_name",
+            "service_name_1",
+            "service_name_2"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "rpm": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "hashes": {
+            "$ref": "#/$defs/Hashes"
+          },
+          "rpm_repository_name": {
+            "type": "string"
+          },
+          "service-short-name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "hashes",
+          "rpm_repository_name",
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "script": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "end-point": {
+            "type": "string"
+          },
+          "hashes": {
+            "$ref": "#/$defs/Hashes"
+          },
+          "script_name": {
+            "type": "string"
+          },
+          "service-short-name": {
+            "type": "string"
+          },
+          "start-point": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "hashes",
+          "script_name",
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "services": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "artifact_type": {
+            "type": "string"
+          },
+          "docker_image_name": {
+            "type": "string"
+          },
+          "docker_registry": {
+            "type": "string"
+          },
+          "docker_tag": {
+            "type": "string"
+          },
+          "force": {
+            "type": "boolean"
+          },
+          "github_branch": {
+            "type": "string"
+          },
+          "github_hash": {
+            "type": "string"
+          },
+          "github_repository": {
+            "type": "string"
+          },
+          "hashes": {
+            "$ref": "#/$defs/Hashes"
+          },
+          "service-short-name": {
+            "type": "string"
+          },
+          "service_name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_type",
+          "docker_image_name",
+          "docker_registry",
+          "docker_tag",
+          "hashes",
+          "service_name"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "artifacts",
+    "metadata",
+    "parameters",
+    "script",
+    "services"
+  ],
+  "additionalProperties": false
+}

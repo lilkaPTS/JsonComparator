@@ -22,7 +22,8 @@
       "required": [
         "sha1",
         "sha256"
-      ]
+      ],
+      "additionalProperties": false
     },
     "service-short-name": {
       "type": "string"
@@ -38,5 +39,6 @@
     "file",
     "hashes",
     "target_repository"
-  ]
+  ],
+  "additionalProperties": false
 }
