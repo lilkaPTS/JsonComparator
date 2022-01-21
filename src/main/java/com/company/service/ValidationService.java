@@ -75,4 +75,15 @@ public class ValidationService {
         String output = result.toString().replace("$", "\n$");
         return output.length() == 0 ? "" : output.substring(1);
     }
+
+    public String checkFileType(MultipartFile inputFile) {
+        StringBuilder result = new StringBuilder();
+
+        if("application/json".equals(inputFile.getContentType())){
+            return "";
+        } else {
+            result.append("$.Error type, file must be of type .json");
+        }
+        return result.toString();
+    }
 }
