@@ -46,13 +46,14 @@ public class ValidationService {
                 result.toString().matches("(?s).*artifacts: is missing but it is required(?s).*"))) {  //check ArtifactObject1-2
             ArrayList<JsonNode> artifacts = MAPPER.readValue(inputFileContent, Artifacts.class).getArtifacts();
             for (JsonNode artifact : artifacts) {
+                if(!schemaService.getSchemaErrors(schemaService.getJsonSchema(ArtifactObject1.class), artifact).isEmpty()) //save by get(0)
                 if (new ArrayList<>(schemaService.getSchemaErrors(schemaService.getJsonSchema(ArtifactObject1.class), artifact))
                         .get(0).toString()
                         .equals("$.mvn: is missing but it is required")
                 ) {
                     schemaService.getSchemaErrors(schemaService.getJsonSchema(ArtifactObject2.class), artifact)
                             .forEach(err ->
-                                    result.append("$.services.")
+                                    result.append("$.artifacts.")
                                             .append(artifacts.indexOf(artifact))
                                             .append(".")
                                             .append(err.toString().substring(2))
@@ -61,7 +62,7 @@ public class ValidationService {
                 } else {
                     schemaService.getSchemaErrors(schemaService.getJsonSchema(ArtifactObject1.class), artifact)
                             .forEach(err ->
-                                    result.append("$.services.")
+                                    result.append("$.artifacts.")
                                             .append(artifacts.indexOf(artifact))
                                             .append(".")
                                             .append(err.toString().substring(2))
