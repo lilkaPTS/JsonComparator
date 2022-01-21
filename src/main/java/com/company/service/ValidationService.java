@@ -4,8 +4,6 @@ import com.company.model.ArtifactObject1;
 import com.company.model.ArtifactObject2;
 import com.company.pojo.Artifacts;
 
-import com.company.pojo.Parameter;
-import com.company.pojo.Services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,40 +35,44 @@ public class ValidationService {
      * @param inputFile file from upload form
      * @return errors in input file schema
      */
-    public String getErrors(MultipartFile inputFile) throws JsonProcessingException {
+    public String getErrors(MultipartFile inputFile) {
         StringBuilder result = new StringBuilder();
         String inputFileContent = fileService.getFileContent(inputFile);
         JsonNode inputFileJsonNode = jsonService.getJsonNode(inputFileContent);
-        schemaService.getSchemaErrors(jsonService.getJsonNode(fileService.getFileContent("JsonSchema.json")),inputFileJsonNode).forEach(err -> result.append(err).append("\n"));
+        schemaService.getSchemaErrors(jsonService.getJsonNode(fileService.getFileContent("JsonSchema.json")),inputFileJsonNode).forEach(result::append);
         if(!(result.toString().matches("(?s).*null found, object expected(?s).*") ||
                 result.toString().matches("(?s).*artifacts: is missing but it is required(?s).*"))) {  //check ArtifactObject1-2
-            ArrayList<JsonNode> artifacts = MAPPER.readValue(inputFileContent, Artifacts.class).getArtifacts();
-            for (JsonNode artifact : artifacts) {
-                if(!schemaService.getSchemaErrors(schemaService.getJsonSchema(ArtifactObject1.class), artifact).isEmpty()) //save by get(0)
-                if (new ArrayList<>(schemaService.getSchemaErrors(schemaService.getJsonSchema(ArtifactObject1.class), artifact))
-                        .get(0).toString()
-                        .equals("$.mvn: is missing but it is required")
-                ) {
-                    schemaService.getSchemaErrors(schemaService.getJsonSchema(ArtifactObject2.class), artifact)
-                            .forEach(err ->
-                                    result.append("$.artifacts.")
-                                            .append(artifacts.indexOf(artifact))
-                                            .append(".")
-                                            .append(err.toString().substring(2))
-                                            .append("\n")
-                            );
-                } else {
-                    schemaService.getSchemaErrors(schemaService.getJsonSchema(ArtifactObject1.class), artifact)
-                            .forEach(err ->
-                                    result.append("$.artifacts.")
-                                            .append(artifacts.indexOf(artifact))
-                                            .append(".")
-                                            .append(err.toString().substring(2))
-                                            .append("\n")
-                            );
+            try {
+                ArrayList<JsonNode> artifacts = MAPPER.readValue(inputFileContent, Artifacts.class).getArtifacts();
+                for (JsonNode artifact : artifacts) {
+                    if (!schemaService.getSchemaErrors(schemaService.getJsonSchema(ArtifactObject1.class), artifact).isEmpty()) { //save by get(0)
+                        if (new ArrayList<>(schemaService.getSchemaErrors(schemaService.getJsonSchema(ArtifactObject1.class), artifact))
+                                .get(0).toString()
+                                .equals("$.mvn: is missing but it is required")
+                        ) {
+                            schemaService.getSchemaErrors(schemaService.getJsonSchema(ArtifactObject2.class), artifact)
+                                    .forEach(err ->
+                                            result.append("$.artifacts.")
+                                                    .append(artifacts.indexOf(artifact))
+                                                    .append(".")
+                                                    .append(err.toString().substring(2))
+                                    );
+                        } else {
+                            schemaService.getSchemaErrors(schemaService.getJsonSchema(ArtifactObject1.class), artifact)
+                                    .forEach(err ->
+                                            result.append("$.artifacts.")
+                                                    .append(artifacts.indexOf(artifact))
+                                                    .append(".")
+                                                    .append(err.toString().substring(2))
+                                    );
+                        }
+                    }
                 }
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
             }
         }
-        return result.toString();
+        String output = result.toString().replace("$", "\n$");
+        return output.length() == 0 ? "" : output.substring(1);
     }
 }
