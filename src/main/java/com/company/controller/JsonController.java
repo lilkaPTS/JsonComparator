@@ -38,15 +38,13 @@ public class JsonController {
 
     @PostMapping("/")
     public String getResponsePage(@RequestParam(name = "file1") MultipartFile multipartFile) throws JsonProcessingException {
-        //validationService.checkFileType(multipartFile);
-        //validationService.checkFileType(multipartFile);
-        /*String errors = validationService.getErrors(multipartFile);
+        String errors = validationService.getErrors(multipartFile);
         System.out.println(errors);
         if("".equals(errors)) {
             ObjectMapper mapper = new ObjectMapper();
             JsonStructure jsonStructure = mapper.readValue(fileService.getFileContent(multipartFile), JsonStructure.class);
             System.out.println(jsonService.getJsonPrettyString(jsonStructure));
-        }*/
+        }
         return "responsePage";
     }
 
