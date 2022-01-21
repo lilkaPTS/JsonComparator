@@ -3,18 +3,18 @@ package com.company.service;
 import com.company.model.ArtifactObject1;
 import com.company.model.ArtifactObject2;
 import com.company.pojo.Artifacts;
-import com.company.pojo.JsonStructure;
+
+import com.company.pojo.Parameter;
+import com.company.pojo.Services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.networknt.schema.ValidationMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+
 
 @Service
 public class ValidationService {
@@ -38,7 +38,6 @@ public class ValidationService {
      * @return errors in input file schema
      */
     public String getErrors(MultipartFile inputFile) throws JsonProcessingException {
-        //Parameter.Services.ServiceName maps
         StringBuilder result = new StringBuilder();
         String inputFileContent = fileService.getFileContent(inputFile);
         JsonNode inputFileJsonNode = jsonService.getJsonNode(inputFileContent);

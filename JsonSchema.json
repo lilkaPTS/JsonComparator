@@ -18,6 +18,7 @@
       "additionalProperties": false
     },
     "Map(String,String)": {
+      "minProperties": 1,
       "type": "object"
     }
   },

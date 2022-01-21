@@ -10,6 +10,7 @@ import com.company.service.SchemaService;
 import com.company.service.ValidationService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.imifou.jsonschema.module.addon.annotation.JsonSchema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

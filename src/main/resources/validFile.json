@@ -189,7 +189,7 @@
         "some-third-param-3": "test8"
       },
       "service_name_2": {
-        "some-third-param-2": "test2"
+        "123": "test2"
       },
       "service_name": {
         "some-third-param-3": "test4"
