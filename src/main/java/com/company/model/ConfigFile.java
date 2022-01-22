@@ -1,11 +1,15 @@
 package com.company.model;
 
 import com.company.pojo.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.Objects;
 
 public class ConfigFile {
+
     private Metadata metadata;
     private ArrayList<Service> services;
     //ArtifactObject is marker interface because Jackson can not define ArtifactObject realisation without additional field in JSON
@@ -25,7 +29,29 @@ public class ConfigFile {
 
     //POJO -> Model
     public ConfigFile(JsonStructure jsonStructure) {
+        this.metadata = jsonStructure.getMetadata();
+        this.services = jsonStructure.getServices();
+        this.artifacts = ArtifactConverter(jsonStructure.getArtifacts());
+        this.script = jsonStructure.getScript();
+        this.rpm = jsonStructure.getRpm();
+        this.parameters = jsonStructure.getParameters();
+    }
 
+    private ArrayList<ArtifactObject> ArtifactConverter(ArrayList<JsonNode> artifacts) {
+        ArrayList<ArtifactObject> result = new ArrayList<>();
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            for(JsonNode artifact : artifacts) {
+                if (artifact.has("mvn")) {
+                    result.add(mapper.readValue(artifact.toString(), ArtifactObject1.class));
+                } else {
+                    result.add(mapper.readValue(artifact.toString(), ArtifactObject2.class));
+                }
+            }
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     public Metadata getMetadata() {
