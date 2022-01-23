@@ -7,7 +7,8 @@
 <body>
   <h1>JsonParser</h1>
   <form method="POST" th:action="@{/}" enctype="multipart/form-data">
-      <input type="file" name="file1"/> <br/><br/>
+      <input type="file" name="file1" accept="application/json"/><br/><br/>
+      <input type="file" name="file2" accept="application/json"/><br/><br/>
       <button type="submit">Submit</button>
   </form>
 </body>

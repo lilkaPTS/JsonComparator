@@ -37,6 +37,10 @@ public class ValidationService {
      */
     public String getErrors(MultipartFile inputFile) {
         StringBuilder result = new StringBuilder();
+        result.append(checkFileType(inputFile));
+        if(!"".equals(result.toString())) {
+            return result.toString();
+        }
         String inputFileContent = fileService.getFileContent(inputFile);
         JsonNode inputFileJsonNode = jsonService.getJsonNode(inputFileContent);
         schemaService.getSchemaErrors(jsonService.getJsonNode(fileService.getFileContent("JsonSchema.json")),inputFileJsonNode).forEach(result::append);
@@ -76,9 +80,8 @@ public class ValidationService {
         return output.length() == 0 ? "" : output.substring(1);
     }
 
-    public String checkFileType(MultipartFile inputFile) {
+    private String checkFileType(MultipartFile inputFile) {
         StringBuilder result = new StringBuilder();
-
         if("application/json".equals(inputFile.getContentType())){
             return "";
         } else {

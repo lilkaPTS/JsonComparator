@@ -18,6 +18,9 @@ public class ConfigFile {
     private ArrayList<Rpm> rpm;
     private Parameter parameters;
 
+    public ConfigFile() {
+    }
+
     public ConfigFile(Metadata metadata, ArrayList<Service> services, ArrayList<ArtifactObject> artifacts, ArrayList<Script> script, ArrayList<Rpm> rpm, Parameter parameters) {
         this.metadata = metadata;
         this.services = services;
