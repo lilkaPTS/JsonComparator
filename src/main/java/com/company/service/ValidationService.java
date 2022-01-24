@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 @Service
@@ -35,17 +36,19 @@ public class ValidationService {
      * @param inputFile file from upload form
      * @return errors in input file schema
      */
-    public String getErrors(MultipartFile inputFile) {
-        StringBuilder result = new StringBuilder();
-        result.append(checkFileType(inputFile));
-        if(!"".equals(result.toString())) {
-            return result.toString();
+    public List<String> getErrors(MultipartFile inputFile) {
+        List<String> result = new ArrayList<>();
+        String fileTypeError = checkFileType(inputFile);
+        if(!"".equals(fileTypeError)) {
+            result.add(fileTypeError);
+            return result;
         }
         String inputFileContent = fileService.getFileContent(inputFile);
         JsonNode inputFileJsonNode = jsonService.getJsonNode(inputFileContent);
-        schemaService.getSchemaErrors(jsonService.getJsonNode(fileService.getFileContent("JsonSchema.json")),inputFileJsonNode).forEach(result::append);
-        if(!(result.toString().matches("(?s).*null found, object expected(?s).*") ||
-                result.toString().matches("(?s).*artifacts: is missing but it is required(?s).*"))) {  //check ArtifactObject1-2
+        JsonNode jsonMainSchema = jsonService.getJsonNode(fileService.getFileContent("JsonSchema.json"));
+        schemaService.getSchemaErrors(jsonMainSchema, inputFileJsonNode).forEach(err -> result.add(err.toString()));
+        if(!(result.contains("$: null found, object expected") ||
+                result.contains("$.artifacts: is missing but it is required"))) {
             try {
                 ArrayList<JsonNode> artifacts = MAPPER.readValue(inputFileContent, Artifacts.class).getArtifacts();
                 for (JsonNode artifact : artifacts) {
@@ -55,20 +58,10 @@ public class ValidationService {
                                 .equals("$.mvn: is missing but it is required")
                         ) {
                             schemaService.getSchemaErrors(schemaService.getJsonSchema(ArtifactObject2.class), artifact)
-                                    .forEach(err ->
-                                            result.append("$.artifacts.")
-                                                    .append(artifacts.indexOf(artifact))
-                                                    .append(".")
-                                                    .append(err.toString().substring(2))
-                                    );
+                                    .forEach(err -> result.add("$.artifacts." + artifacts.indexOf(artifact) + "." + err.toString().substring(2)));
                         } else {
                             schemaService.getSchemaErrors(schemaService.getJsonSchema(ArtifactObject1.class), artifact)
-                                    .forEach(err ->
-                                            result.append("$.artifacts.")
-                                                    .append(artifacts.indexOf(artifact))
-                                                    .append(".")
-                                                    .append(err.toString().substring(2))
-                                    );
+                                    .forEach(err -> result.add("$.artifacts." + artifacts.indexOf(artifact) + "." + err.toString().substring(2)));
                         }
                     }
                 }
@@ -76,9 +69,9 @@ public class ValidationService {
                 e.printStackTrace();
             }
         }
-        String output = result.toString().replace("$", "\n$");
-        return output.length() == 0 ? "" : output.substring(1);
+        return result;
     }
+
 
     private String checkFileType(MultipartFile inputFile) {
         StringBuilder result = new StringBuilder();
