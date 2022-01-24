@@ -1,14 +1,8 @@
 package com.company.model;
 
-import com.company.service.JsonService;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.util.List;
 
 public class ResponseObject {
-
-    @Autowired
-    private JsonService jsonService;
 
     private List<String> errors;
     private String configFile1;
@@ -17,20 +11,11 @@ public class ResponseObject {
 
     public ResponseObject() {}
 
-    public ResponseObject(JsonService jsonService, List<String> errors, ConfigFile configFile1, ConfigFile configFile2, List<String> metadata) {
-        this.jsonService = jsonService;
+    public ResponseObject(List<String> errors, String configFile1, String configFile2, List<String> metadata) {
         this.errors = errors;
-        this.configFile1 = jsonService.getJsonPrettyString(configFile1);
-        this.configFile2 = jsonService.getJsonPrettyString(configFile2);
+        this.configFile1 = configFile1;
+        this.configFile2 = configFile2;
         this.metadata = metadata;
-    }
-
-    public JsonService getJsonService() {
-        return jsonService;
-    }
-
-    public void setJsonService(JsonService jsonService) {
-        this.jsonService = jsonService;
     }
 
     public List<String> getErrors() {
@@ -63,16 +48,5 @@ public class ResponseObject {
 
     public void setMetadata(List<String> metadata) {
         this.metadata = metadata;
-    }
-
-    @Override
-    public String toString() {
-        return "ResponseObject{" +
-                "jsonService=" + jsonService +
-                ", errors=" + errors +
-                ", configFile1='" + configFile1 + '\'' +
-                ", configFile2='" + configFile2 + '\'' +
-                ", metadata=" + metadata +
-                '}';
     }
 }
