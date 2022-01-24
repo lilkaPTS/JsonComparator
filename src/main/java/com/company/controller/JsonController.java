@@ -4,7 +4,6 @@ import com.company.model.ConfigFile;
 import com.company.pojo.JsonStructure;
 import com.company.service.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
 
 
 @Controller
@@ -37,7 +35,7 @@ public class JsonController {
     @PostMapping("/")
     public String getResponsePage(@RequestParam(name = "file1") MultipartFile multipartFile1, @RequestParam(name = "file2") MultipartFile multipartFile2)
             throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
+       /* ObjectMapper mapper = new ObjectMapper();
         String errors1 = validationService.getErrors(multipartFile1);
         String errors2 = validationService.getErrors(multipartFile2);
         System.out.println(errors1);
@@ -48,8 +46,11 @@ public class JsonController {
             System.out.println("Files created successfully");
             System.out.println(jsonService.getJsonNode(fileService.getFileContent(multipartFile1)).at("/artifacts/0/mvn/0/groupId"));
 
+
+            comparisonService.getInconsistenciesOfMetadata(configFile1, configFile2).forEach(System.out::println);
         }
-        return "responsePage";
+        return "responsePage";*/
+        return "test";
     }
 
 }
