@@ -13,4 +13,11 @@ import javax.validation.constraints.NotNull;
 public class Application {
     @JsonProperty(value = "name",required = true)
     private String name;
+
+    @Override
+    public String toString() {
+        return "\"application\" : {\n" +
+                "\"name\" : \"" + name + "\"\n" +
+                "}";
+    }
 }
