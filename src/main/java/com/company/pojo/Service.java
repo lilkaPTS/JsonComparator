@@ -3,7 +3,7 @@ package com.company.pojo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
-import java.util.Comparator;
+import java.util.Objects;
 
 @Data
 public class Service implements Comparable<Service> {
@@ -29,7 +29,21 @@ public class Service implements Comparable<Service> {
     private String githubBash;
     @JsonProperty(value ="hashes",required = true)
     private Hashes hashes;
-    
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Service service = (Service) o;
+        return serviceName.equals(service.serviceName) && artifactType.equals(service.artifactType) && dockerRegistry.equals(service.dockerRegistry) && dockerImageName.equals(service.dockerImageName) && dockerTag.equals(service.dockerTag) && hashes.equals(service.hashes);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(serviceName, artifactType, dockerRegistry, dockerImageName, dockerTag, hashes);
+    }
+
     @Override
     public int compareTo(Service o) {
         int result = 1;
