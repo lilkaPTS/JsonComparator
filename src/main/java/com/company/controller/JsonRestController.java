@@ -2,6 +2,7 @@ package com.company.controller;
 
 import com.company.model.ConfigFile;
 import com.company.model.ResponseObject;
+import com.company.model.ResponseView;
 import com.company.pojo.JsonStructure;
 import com.company.service.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -43,8 +44,10 @@ public class JsonRestController {
         if(errors.isEmpty()) {
             ConfigFile configFile1 = new ConfigFile(mapper.readValue(fileService.getFileContent(multipartFile1), JsonStructure.class));
             ConfigFile configFile2 = new ConfigFile(mapper.readValue(fileService.getFileContent(multipartFile2), JsonStructure.class));
-            System.out.println(comparisonService.execute(configFile1, configFile2));
+            result.setResponseView(comparisonService.execute(configFile1, configFile2));
 
+            //System.out.println(comparisonService.execute(configFile1, configFile2));
+            //System.out.println(configFile1.getServices().get(0));
         }
         return result;
     }
