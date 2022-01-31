@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class ComparisonService {
@@ -22,18 +24,24 @@ public class ComparisonService {
     public ResponseView execute(ConfigFile config1, ConfigFile config2) {
         ResponseView result = new ResponseView();
         List<List<String>> metadata = getMetadata(config1, config2);
+        List<List<String>> services = getServices(config1, config2);
+
         result.add("{");
+
         metadata.get(0).forEach(result::add1);
         metadata.get(1).forEach(result::add2);
+
+        services.get(0).forEach(result::add1);
+        services.get(1).forEach(result::add2);
+
         result.add("}");
         return result;
     }
 
-    //если есть несовпадение, выдаёт не совпавшее поле из второго файла
     public List<List<String>> getMetadata(ConfigFile config1, ConfigFile config2) {
         List<List<String>> result = new ArrayList<>();
-        List<String> metadata1 = new ArrayList<>(setColorNonEveryWhere(Arrays.asList(config1.getMetadata().toString().split("\n"))));
-        List<String> metadata2 = new ArrayList<>(setColorNonEveryWhere(Arrays.asList(config2.getMetadata().toString().split("\n"))));
+        List<String> metadata1 = new ArrayList<>(setColorEveryWhere(Arrays.asList(config1.getMetadata().toString().split("\n")), DEFAULT));
+        List<String> metadata2 = new ArrayList<>(setColorEveryWhere(Arrays.asList(config2.getMetadata().toString().split("\n")), DEFAULT));
         List<Integer> inconsistenciesList = getMultipliersV2(config1.getMetadata().compareTo(config2.getMetadata()));
         if(inconsistenciesList.contains(2)) {
             setColor(metadata2, "version", ERROR);
@@ -46,6 +54,127 @@ public class ComparisonService {
         return result;
     }
 
+    public boolean isBest(List<Integer> list, int grade) {
+        return Collections.min(list) == grade;
+    }
+
+    public List<List<String>> getServices(ConfigFile config1, ConfigFile config2){
+        List<List<String>> result = new ArrayList<>();
+
+        List<com.company.pojo.Service> config1Services = config1.getServices();
+        List<com.company.pojo.Service> config2Services = config2.getServices();
+
+        Map<Integer, Integer> services = new HashMap<>();
+        Map<Integer, Integer> additionalServices = new HashMap<>();
+
+        List<List<Integer>> gradesMin = config1Services.size() <= config2Services.size() ?
+                getGrades(config1.getServices(), config2.getServices()) :
+                getGrades(config2.getServices(), config1.getServices());
+        List<List<Integer>> gradesMax = config1Services.size() >= config2Services.size() ?
+                getGrades(config1.getServices(), config2.getServices()) :
+                getGrades(config2.getServices(), config1.getServices());
+
+        for (int i = 0; i < gradesMin.size(); i++) {
+            List<Integer> immutableList = gradesMin.get(i);
+            List<Integer> currentGrades = gradesMin.get(i);
+            int bestGrade = -1;
+            for (int j = 0; j < immutableList.size(); j++) {
+                bestGrade = Collections.min(currentGrades);
+                if(bestGrade == 30030) {
+                    services.put(i, -1);
+                    break;
+                }
+                if(Collections.min(gradesMax.get(immutableList.indexOf(bestGrade))) == bestGrade) {
+                    services.put(i, immutableList.indexOf(bestGrade));
+                    break;
+                }
+                currentGrades.remove(new Integer(bestGrade));
+            }
+            if(bestGrade == -1) {
+                services.put(i, -1);
+            }
+        }
+        List<Integer> deletedIndexes = new ArrayList<>(services.values());
+
+        for (int i = 0; i < config2Services.size(); i++) {
+            if(!deletedIndexes.contains(i)){
+                additionalServices.put(i, -1);
+            }
+        }
+
+//        System.out.println("gradesMin");
+//        gradesMin.forEach(System.out::println);
+//        System.out.println("gradesMax");
+//        gradesMax.forEach(System.out::println);
+//        System.out.println("services");
+//        System.out.println(services);
+//        System.out.println("additionalServices");
+//        System.out.println(additionalServices);
+
+        List<String> servicesResult1 = new ArrayList<>();
+        List<String> servicesResult2 = new ArrayList<>();
+
+
+        servicesResult1.add("\"services\": [");
+        servicesResult2.add("\"services\": [");
+
+        services.keySet().forEach(key -> {
+            if(services.get(key) != -1) {
+                servicesResult1.addAll(setColorEveryWhere(Arrays.asList(config1Services.get(key).toString().split("\n")), DEFAULT));
+                servicesResult2.addAll(setColorEveryWhere(Arrays.asList(config2Services.get(services.get(key)).toString().split("\n")), DEFAULT));
+            } else {
+                List<String> auxiliaryList = new ArrayList<>();
+                for (int i = 0; i < config1Services.get(key).toString().split("\n").length; i++) {
+                    auxiliaryList.add(" ");
+                }
+                servicesResult1.addAll(setColorEveryWhere(Arrays.asList(config1Services.get(key).toString().split("\n")), NOTIFICATION));
+                servicesResult2.addAll(setColorEveryWhere(auxiliaryList, DEFAULT));
+            }
+        });
+        additionalServices.keySet().forEach(key -> {
+            List<String> auxiliaryList = new ArrayList<>();
+            for (int i = 0; i < config2Services.get(key).toString().split("\n").length; i++) {
+                auxiliaryList.add(" ");
+            }
+            servicesResult1.addAll(setColorEveryWhere(auxiliaryList, DEFAULT));
+            servicesResult2.addAll(setColorEveryWhere(Arrays.asList(config2Services.get(key).toString().split("\n")), NOTIFICATION));
+        });
+        servicesResult1.set(searchLastNeedElementIgnoreColor(servicesResult1, "},"), "}");
+        servicesResult2.set(searchLastNeedElementIgnoreColor(servicesResult2, "},"), "}");
+
+        servicesResult1.add("],");
+        servicesResult2.add("],");
+        result.add(servicesResult1);
+        result.add(servicesResult2);
+        return result;
+    }
+
+    public int searchLastNeedElementIgnoreColor(List<String> list, String searchString) {
+        List<Integer> indexes = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            if(list.get(i).matches("^" + searchString + ".*$")) {
+                indexes.add(i);
+            }
+        }
+        return Collections.max(indexes);
+    }
+
+    public List<List<Integer>> getGrades(List<com.company.pojo.Service> list1, List<com.company.pojo.Service> list2) {
+        List<List<Integer>> result = new ArrayList<>();
+        for (com.company.pojo.Service service1 : list1) {
+            List<Integer> currentGrades = new ArrayList<>();
+            for (com.company.pojo.Service service2 : list2) {
+                currentGrades.add(service1.compareTo(service2));
+            }
+            result.add(currentGrades);
+        }
+        return result;
+    }
+
+    public boolean isInteger(String str) {
+        return str.matches("-?\\d+(\\.\\d+)?");
+    }
+
     public void setColor(List<String> list, String element, String color) {
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i).matches("^\"" + element + "\" : .+$")) {
@@ -54,33 +183,10 @@ public class ComparisonService {
         }
     }
 
-    public List<String> setColorNonEveryWhere(List<String> input) {
+    public List<String> setColorEveryWhere(List<String> input, String color) {
         for (int i = 0; i < input.size(); i++)
-            input.set(i, input.get(i) + KEY_EXPRESSION + DEFAULT);
+            input.set(i, input.get(i) + KEY_EXPRESSION + color);
         return input;
-    }
-
-    public List<String> getInconsistenciesOfServices(ConfigFile config1, ConfigFile config2){
-        List<String> result = new ArrayList<>();
-        List<com.company.pojo.Service> s1 = config1.getServices();
-        List<com.company.pojo.Service> s2 = config2.getServices();
-
-
-        return result;
-    }
-
-    public List<String> getInconsistenciesOfOptional(ConfigFile config1, ConfigFile config2) {
-        List<String> result = new ArrayList<>();
-
-        return result;
-    }
-
-    public String jsonStringSetter(String key, String value) {
-        return "\"" + key + "\":" + "\"" + value + "\"";
-    }
-
-    public String jsonStringSetter(String key, int value) {
-        return "\"" + key + "\":" + value;
     }
 
     public static List<Integer> getMultipliersV2(int inputNumber) {
@@ -94,7 +200,8 @@ public class ComparisonService {
         return result;
     }
 
-    public static List<Integer> getSimpleNumbers(int limit) {
+
+    /*public static List<Integer> getSimpleNumbers(int limit) {
         List<Integer> result = new ArrayList<>();
         for (int i = 2; i <= limit; i++) {
             result.add(i);
@@ -121,5 +228,55 @@ public class ComparisonService {
             }
         }
         return result;
+    }*/
+
+    /*
+
+     */
+/**
+ * This function edit element value of list
+ *//*
+
+    public void editRow(List<String> list, String element, String newValue) {
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).matches("^\"" + element + "\" : .+$")) {
+                editRowLogic(list, element, newValue, i);
+            }
+        }
     }
+
+    */
+/**
+ * Overload. This function help if element which you need to edit
+ * repeated in the list
+ * @param elementIndex it is counter
+ *//*
+
+    public void editRow(List<String> list, String element, String newValue, int elementIndex) {
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).matches("^\"" + element + "\" : .+$")) {
+                if(elementIndex == 0) {
+                    editRowLogic(list, element, newValue, i);
+                } else {
+                    elementIndex--;
+                }
+            }
+        }
+    }
+
+    */
+/**
+ * This function is logic part of function editRow
+ *//*
+
+    public void editRowLogic(List<String> list, String element, String newValue, int i) {
+        Matcher matcher = Pattern.compile("^(\"" + element +"\" : ).+(---color:.+)$").matcher(list.get(i));
+        if(isInteger(element)) {
+            element = element.replace("\"", " ").trim();
+        } else {
+            element = "\"" + element + "\"";
+        }
+        list.set(i, matcher.group(0) + newValue + matcher.group(1));
+    }
+*/
 }
