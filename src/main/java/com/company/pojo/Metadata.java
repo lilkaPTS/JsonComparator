@@ -28,6 +28,6 @@ public class Metadata implements Comparable<Metadata> {
         return "\"metadata\" : {\n" +
                  description + ",\n" +
                  application +
-                "\n}";
+                "\n},";
     }
 }

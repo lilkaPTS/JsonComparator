@@ -10,9 +10,11 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class ResponseView {
     private List<String> configFile1 = new ArrayList<>();
     private List<String> configFile2 = new ArrayList<>();
+
     public void add(String str) {
         this.add1(str);
         this.add2(str);

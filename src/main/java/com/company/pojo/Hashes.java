@@ -37,4 +37,12 @@ public class Hashes implements Comparable<Hashes> {
         result*=this.sha256.equals(o.sha256) ? 1 : 3;
         return result==1 ? 0 : result;
     }
+
+    @Override
+    public String toString() {
+        return "\"hashes\" : {\n" +
+                "\"sha1\" : \"" + sha1 + "\",\n" +
+                "\"sha256\" : \"" + sha256 + "\"\n" +
+                "}";
+    }
 }
