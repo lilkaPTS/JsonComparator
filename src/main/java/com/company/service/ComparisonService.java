@@ -54,79 +54,74 @@ public class ComparisonService {
         return result;
     }
 
-    public boolean isBest(List<Integer> list, int grade) {
-        return Collections.min(list) == grade;
-    }
-
-    public List<List<String>> getServices(ConfigFile config1, ConfigFile config2){
-        List<List<String>> result = new ArrayList<>();
-
-        List<com.company.pojo.Service> config1Services = config1.getServices();
-        List<com.company.pojo.Service> config2Services = config2.getServices();
-
-        Map<Integer, Integer> services = new HashMap<>();
-        Map<Integer, Integer> additionalServices = new HashMap<>();
-
-        List<List<Integer>> gradesMin = config1Services.size() <= config2Services.size() ?
-                    getGrades(config1.getServices(), config2.getServices()) :
-                    getGrades(config2.getServices(), config1.getServices());
-
-        List<List<Integer>> gradesMax = config1Services.size() >= config2Services.size()
-                && !gradesMin.equals(getGrades(config1.getServices(), config2.getServices()))?
-                    getGrades(config1.getServices(), config2.getServices()) :
-                    getGrades(config2.getServices(), config1.getServices());
-
-
+    public Map<Integer, Integer> elementMatcher(List<List<Integer>> gradesMin, List<List<Integer>> gradesMax, int gradesWorst) {
+        Map<Integer, Integer> result =  new HashMap<>();
         for (int i = 0; i < gradesMin.size(); i++) {
             List<Integer> immutableList = new ArrayList<>(gradesMin.get(i));
             List<Integer> currentGrades = new ArrayList<>(gradesMin.get(i));
             int bestGrade = -1;
             for (int j = 0; j < immutableList.size(); j++) {
                 bestGrade = Collections.min(currentGrades);
-                if(bestGrade == 30030) {
-                    services.put(i, -1);
+                if(bestGrade == gradesWorst) {
+                    result.put(i, -1);
                     break;
                 }
                 if(Collections.min(gradesMax.get(immutableList.indexOf(bestGrade))) == bestGrade) {
-                    services.put(i, immutableList.indexOf(bestGrade));
+                    result.put(i, immutableList.indexOf(bestGrade));
                     break;
                 }
                 currentGrades.remove(new Integer(bestGrade));
             }
             if(bestGrade == -1) {
-                services.put(i, -1);
+                result.put(i, -1);
             }
         }
-        List<Integer> deletedIndexes = new ArrayList<>(services.values());
+        return result;
+    }
 
+    /**
+     * Functional part of this function based for two matrices (gradesMin, gradesMax),
+     * based of then
+     */
+    public List<List<String>> getServices(ConfigFile config1, ConfigFile config2){
+        List<List<String>> result = new ArrayList<>();
+        List<com.company.pojo.Service> config1Services = config1.getServices();
+        List<com.company.pojo.Service> config2Services = config2.getServices();
+        //gradesMax is the transpose of the gradesMin of comparator scores
+        List<List<Integer>> gradesMin = config1Services.size() <= config2Services.size() ?
+                    getGrades(config1.getServices(), config2.getServices()) :
+                    getGrades(config2.getServices(), config1.getServices());
+        List<List<Integer>> gradesMax = config1Services.size() >= config2Services.size()
+                && !gradesMin.equals(getGrades(config1.getServices(), config2.getServices()))?
+                    getGrades(config1.getServices(), config2.getServices()) :
+                    getGrades(config2.getServices(), config1.getServices());
+        //gradesWorst is maximum comparator score
+        Map<Integer, Integer> comparedServicesAndAdditionalServices1 = new HashMap<>(elementMatcher(gradesMin, gradesMax, 30030));
+        Map<Integer, Integer> additionalServices2 = new HashMap<>();
+        List<Integer> deletedIndexes = new ArrayList<>(comparedServicesAndAdditionalServices1.values());
         for (int i = 0; i < config2Services.size(); i++) {
             if(!deletedIndexes.contains(i)){
-                additionalServices.put(i, -1);
+                additionalServices2.put(i, -1);
             }
         }
-
-        System.out.println("gradesMin");
+        /*System.out.println("gradesMin");
         gradesMin.forEach(System.out::println);
         System.out.println("gradesMax");
         gradesMax.forEach(System.out::println);
-        System.out.println("services");
-        System.out.println(services);
-        System.out.println("additionalServices");
-        System.out.println(additionalServices);
-
+        System.out.println("comparedServicesAndAdditionalServices1");
+        System.out.println(comparedServicesAndAdditionalServices1);
+        System.out.println("additionalServices2");
+        System.out.println(additionalServices2);*/
         List<String> servicesResult1 = new ArrayList<>();
         List<String> servicesResult2 = new ArrayList<>();
-
-
         servicesResult1.add("\"services\": [");
         servicesResult2.add("\"services\": [");
-
-        services.keySet().forEach(key -> {
-            if(services.get(key) != -1) {
+        comparedServicesAndAdditionalServices1.keySet().forEach(key -> {
+            if(comparedServicesAndAdditionalServices1.get(key) != -1) {
                 servicesResult1.addAll(setColorEveryWhere(Arrays.asList(config1Services.get(key).toString().split("\n")), DEFAULT));
-                List<String> auxiliaryList = new ArrayList<>(setColorEveryWhere(Arrays.asList(config2Services.get(services.get(key)).toString().split("\n")), DEFAULT));
+                List<String> auxiliaryList = new ArrayList<>(setColorEveryWhere(Arrays.asList(config2Services.get(comparedServicesAndAdditionalServices1.get(key)).toString().split("\n")), DEFAULT));
                 com.company.pojo.Service currentService1 = config1Services.get(key);
-                com.company.pojo.Service currentService2 = config2Services.get(services.get(key));
+                com.company.pojo.Service currentService2 = config2Services.get(comparedServicesAndAdditionalServices1.get(key));
                 List<Integer> inconsistenciesList = getMultipliersV2(currentService1.compareTo(currentService2));
                 if(inconsistenciesList.contains(2)) {
                     setColor(auxiliaryList, "service_name", ERROR);
@@ -144,7 +139,7 @@ public class ComparisonService {
                     setColor(auxiliaryList, "docker_tag", ERROR);
                 }
                 if(inconsistenciesList.contains(13)) {
-                    List<Integer> inconsistenciesHashes = getMultipliersV2(config1Services.get(key).getHashes().compareTo(config2Services.get(services.get(key)).getHashes()));
+                    List<Integer> inconsistenciesHashes = getMultipliersV2(config1Services.get(key).getHashes().compareTo(config2Services.get(comparedServicesAndAdditionalServices1.get(key)).getHashes()));
                     if(inconsistenciesHashes.contains(2)) {
                         setColor(auxiliaryList, "sha1", ERROR);
                     }
@@ -192,7 +187,7 @@ public class ComparisonService {
                 servicesResult2.addAll(setColorEveryWhere(auxiliaryList, DEFAULT));
             }
         });
-        additionalServices.keySet().forEach(key -> {
+        additionalServices2.keySet().forEach(key -> {
             List<String> auxiliaryList = new ArrayList<>();
             for (int i = 0; i < config2Services.get(key).toString().split("\n").length; i++) {
                 auxiliaryList.add(" ");
@@ -200,9 +195,10 @@ public class ComparisonService {
             servicesResult1.addAll(setColorEveryWhere(auxiliaryList, DEFAULT));
             servicesResult2.addAll(setColorEveryWhere(Arrays.asList(config2Services.get(key).toString().split("\n")), NOTIFICATION));
         });
-        servicesResult1.set(searchLastNeedElementIgnoreColor(servicesResult1, "},"), "}");
-        servicesResult2.set(searchLastNeedElementIgnoreColor(servicesResult2, "},"), "}");
-
+        if(!config1.getServices().isEmpty())
+            servicesResult1.set(searchLastNeedElementIgnoreColor(servicesResult1, "},"), "}");
+        if(!config2.getServices().isEmpty())
+            servicesResult2.set(searchLastNeedElementIgnoreColor(servicesResult2, "},"), "}");
         servicesResult1.add("],");
         servicesResult2.add("],");
         result.add(servicesResult1);
