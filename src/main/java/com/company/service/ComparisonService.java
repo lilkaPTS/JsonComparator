@@ -147,12 +147,13 @@ public class ComparisonService {
                         setColor(auxiliaryList, "sha256", ERROR);
                     }
                 }
-//                if(currentService1.getServiceName() != null &&
-//                        currentService1.getServiceShortName().equals(currentService2.getServiceShortName())) {
-//                    setColor(auxiliaryList, "service-short-name", WARNING);
-//                } else if(currentService1.getServiceName() == null && currentService2.getServiceName() != null) {
-//                    setColor(auxiliaryList, "service-short-name", WARNING);
-//                }
+                if(currentService1.getServiceShortName() != null) {
+                    if(!currentService1.getServiceShortName().equals(currentService2.getServiceShortName())) {
+                        setColor(auxiliaryList, "service-short-name", WARNING);
+                    }
+                } else if(currentService2.getServiceShortName() != null) {
+                    setColor(auxiliaryList, "service-short-name", WARNING);
+                }
                 /*if(currentService1.getf) != null &&
                         currentService1.getServiceShortName().equals(currentService2.getServiceShortName())) {
                     setColor(auxiliaryList, "service-short-name", WARNING);

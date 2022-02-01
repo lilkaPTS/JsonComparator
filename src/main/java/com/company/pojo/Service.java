@@ -34,7 +34,6 @@ public class Service implements Comparable<Service> {
     @JsonProperty(value ="hashes",required = true)
     private Hashes hashes;
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
