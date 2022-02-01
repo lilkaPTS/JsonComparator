@@ -62,11 +62,11 @@ public class ComparisonService {
             int bestGrade = -1;
             for (int j = 0; j < immutableList.size(); j++) {
                 bestGrade = Collections.min(currentGrades);
-                if(bestGrade == gradesWorst) {
+                if(bestGrade >= gradesWorst) {
                     result.put(i, -1);
                     break;
                 }
-                if(Collections.min(gradesMax.get(immutableList.indexOf(bestGrade))) == bestGrade && !result.containsKey(immutableList.indexOf(bestGrade))) {
+                if(Collections.min(gradesMax.get(immutableList.indexOf(bestGrade))) == bestGrade){// && !result.containsKey(immutableList.indexOf(bestGrade))) {
                     result.put(i, immutableList.indexOf(bestGrade));
                     break;
                 }
@@ -95,11 +95,12 @@ public class ComparisonService {
                 && !gradesMin.equals(getGrades(config1.getServices(), config2.getServices()))?
                     getGrades(config1.getServices(), config2.getServices()) :
                     getGrades(config2.getServices(), config1.getServices());
+        //List<com.company.pojo.Service> config2Services = config2.getServices();
         //gradesWorst is maximum comparator score
-        Map<Integer, Integer> comparedServicesAndAdditionalServices1 = new HashMap<>(elementMatcher(gradesMin, gradesMax, 30030));
+        Map<Integer, Integer> comparedServicesAndAdditionalServices1 = new HashMap<>(elementMatcher(gradesMin, gradesMax, 84));
         Map<Integer, Integer> additionalServices2 = new HashMap<>();
         List<Integer> deletedIndexes = new ArrayList<>(comparedServicesAndAdditionalServices1.values());
-        for (int i = 0; i < config2Services.size(); i++) {
+        for (int i = 0; i < config2Services.size(); i++) { /// errrrrorooooooorrrr
             if(!deletedIndexes.contains(i)){
                 additionalServices2.put(i, -1);
             }
@@ -122,23 +123,22 @@ public class ComparisonService {
                 List<String> auxiliaryList = new ArrayList<>(setColorEveryWhere(Arrays.asList(config2Services.get(comparedServicesAndAdditionalServices1.get(key)).toString().split("\n")), DEFAULT));
                 com.company.pojo.Service currentService1 = config1Services.get(key);
                 com.company.pojo.Service currentService2 = config2Services.get(comparedServicesAndAdditionalServices1.get(key));
-                List<Integer> inconsistenciesList = getMultipliersV2(currentService1.compareTo(currentService2));
-                if(inconsistenciesList.contains(2)) {
+                if(!currentService1.getServiceName().equals(currentService2.getServiceName())) {
                     setColor(auxiliaryList, "service_name", ERROR);
                 }
-                if(inconsistenciesList.contains(3)) {
+                if(!currentService1.getArtifactType().equals(currentService2.getArtifactType())) {
                     setColor(auxiliaryList, "artifact_type", ERROR);
                 }
-                if(inconsistenciesList.contains(5)) {
+                if(!currentService1.getDockerRegistry().equals(currentService2.getDockerRegistry())) {
                     setColor(auxiliaryList, "docker_registry", ERROR);
                 }
-                if(inconsistenciesList.contains(7)) {
+                if(!currentService1.getDockerImageName().equals(currentService2.getDockerImageName())) {
                     setColor(auxiliaryList, "docker_image_name", ERROR);
                 }
-                if(inconsistenciesList.contains(11)) {
+                if(!currentService1.getDockerTag().equals(currentService2.getDockerTag())) {
                     setColor(auxiliaryList, "docker_tag", ERROR);
                 }
-                if(inconsistenciesList.contains(13)) {
+                if(!currentService1.getHashes().equals(currentService2.getHashes())) {
                     List<Integer> inconsistenciesHashes = getMultipliersV2(config1Services.get(key).getHashes().compareTo(config2Services.get(comparedServicesAndAdditionalServices1.get(key)).getHashes()));
                     if(inconsistenciesHashes.contains(2)) {
                         setColor(auxiliaryList, "sha1", ERROR);

@@ -47,34 +47,50 @@ public class Service implements Comparable<Service> {
         return Objects.hash(serviceName, artifactType, dockerRegistry, dockerImageName, dockerTag, hashes);
     }
 
+//    @Override
+//    public int compareTo(Service o) {
+//        int result = 1;
+//        result*=this.serviceName.equals(o.serviceName) ? 1 : 2;
+//        result*=this.artifactType.equals(o.artifactType) ? 1 : 3;
+//        result*=this.dockerRegistry.equals(o.dockerRegistry) ? 1 : 5;
+//        result*=this.dockerImageName.equals(o.dockerImageName) ? 1 : 7;
+//        result*=this.dockerTag.equals(o.dockerTag) ? 1 : 11;
+//        result*=this.hashes.equals(o.hashes) ? 1 : 13;
+//        return result==1 ? 0 : result;
+//    }
+
     @Override
     public int compareTo(Service o) {
-        int result = 1;
-        result*=this.serviceName.equals(o.serviceName) ? 1 : 2;
-        result*=this.artifactType.equals(o.artifactType) ? 1 : 3;
-        result*=this.dockerRegistry.equals(o.dockerRegistry) ? 1 : 5;
-        result*=this.dockerImageName.equals(o.dockerImageName) ? 1 : 7;
-        result*=this.dockerTag.equals(o.dockerTag) ? 1 : 11;
-        result*=this.hashes.equals(o.hashes) ? 1 : 13;
-        return result==1 ? 0 : result;
-    }
-
-    /*@Override
-    public int compareTo(Service o) {
         int result = 0;
-        result+=this.serviceShortName.equals(o.serviceShortName) ? 0 : 1;
+        if(this.serviceShortName!=null){
+            result+=this.serviceShortName.equals(o.serviceShortName) ? 0 : 1;
+        } else if(o.serviceShortName!=null) {
+            ++result;
+        }
         result+=this.serviceName.equals(o.serviceName) ? 0 : 12;
         result+=this.artifactType.equals(o.artifactType) ? 0 : 12;
         result+=this.dockerRegistry.equals(o.dockerRegistry) ? 0 : 12;
         result+=this.dockerImageName.equals(o.dockerImageName) ? 0 : 12;
         result+=this.dockerTag.equals(o.dockerTag) ? 0 : 12;
         result+=this.force == o.force ? 0 : 1;
-        result+=this.gitRepository.equals(o.gitRepository) ? 0 : 1;
-        result+=this.githubBranch.equals(o.githubBranch) ? 0 : 1;
-        result+=this.githubBash.equals(o.githubBash) ? 0 : 1;
+        if(this.gitRepository!=null){
+            result+=this.gitRepository.equals(o.gitRepository) ? 0 : 1;
+        } else if(o.gitRepository!=null) {
+            ++result;
+        }
+        if(this.githubBranch!=null){
+            result+=this.githubBranch.equals(o.githubBranch) ? 0 : 1;
+        } else if(o.githubBranch!=null) {
+            ++result;
+        }
+        if(this.githubBash!=null){
+            result+=this.githubBash.equals(o.githubBash) ? 0 : 1;
+        } else if(o.githubBash!=null) {
+            ++result;
+        }
         result+=this.hashes.equals(o.hashes) ? 0 : 24;
-        return result==1 ? 0 : result;
-    }*/
+        return result;
+    }
 
 //    @Override
 //    public int compareTo(Service o) {
