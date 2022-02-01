@@ -46,7 +46,6 @@ public class ComparisonService {
 
     public List<List<String>> getServices(ConfigFile config1, ConfigFile config2) {
         List<List<String>> result = new ArrayList<>();
-
         List<com.company.pojo.Service> servicesMinSize = config1.getServices().size() <= config2.getServices().size() ?
                 config1.getServices() : config2.getServices();
         List<com.company.pojo.Service> servicesMaxSize = servicesMinSize.equals(config1.getServices()) ?
@@ -60,48 +59,50 @@ public class ComparisonService {
         List<Integer> skipFromServicesMinSize = new ArrayList<>(comparedServices.keySet());
         List<Integer> skipFromServicesMaxSize = new ArrayList<>(comparedServices.values());
         for (int i = 0; i < servicesMinSize.size(); i++) {
-            if(!skipFromServicesMinSize.contains(i)){
+            if (!skipFromServicesMinSize.contains(i)) {
                 additionalFromServicesMinSize.put(i, -1);
             }
         }
         for (int i = 0; i < servicesMaxSize.size(); i++) {
-            if(!skipFromServicesMaxSize.contains(i)){
+            if (!skipFromServicesMaxSize.contains(i)) {
                 additionalFromServicesMaxSize.put(i, -1);
             }
         }
         List<String> servicesResult1 = new ArrayList<>(); // servicesMinSize
         List<String> servicesResult2 = new ArrayList<>(); // servicesMaxSize
-        comparedServices.keySet().forEach(key -> {
-            com.company.pojo.Service currentService1 = servicesMinSize.get(key);
-            com.company.pojo.Service currentService2 = servicesMaxSize.get(comparedServices.get(key));
-            servicesResult1.addAll(setColorEveryWhere(Arrays.asList(currentService1.toString().split("\n")), DEFAULT));
-            List<String> auxiliaryList = new ArrayList<>(setColorEveryWhere(Arrays.asList(currentService2.toString().split("\n")), DEFAULT));
-            equalsAndSetColor(currentService1, currentService2, "serviceShortName", auxiliaryList, "service-short-name", WARNING);
-            equalsAndSetColor(currentService1, currentService2, "serviceName", auxiliaryList, "service_name", ERROR);
-            equalsAndSetColor(currentService1, currentService2, "artifactType", auxiliaryList, "artifact_type", ERROR);
-            equalsAndSetColor(currentService1, currentService2, "dockerRegistry", auxiliaryList, "docker_registry", ERROR);
-            equalsAndSetColor(currentService1, currentService2, "dockerImageName", auxiliaryList, "docker_image_name", ERROR);
-            equalsAndSetColor(currentService1, currentService2, "dockerTag", auxiliaryList, "docker_tag", ERROR);
-            equalsAndSetColor(currentService1, currentService2, "force", auxiliaryList, "force", WARNING);
-            equalsAndSetColor(currentService1, currentService2, "gitRepository", auxiliaryList, "github_repository", WARNING);
-            equalsAndSetColor(currentService1, currentService2, "githubBranch", auxiliaryList, "github_branch", WARNING);
-            equalsAndSetColor(currentService1, currentService2, "githubBash", auxiliaryList, "github_hash", WARNING);
-            if(!currentService1.getHashes().equals(currentService2.getHashes())) {
-                equalsAndSetColor(currentService1.getHashes(), currentService2.getHashes(), "sha1", auxiliaryList, "sha1", ERROR);
-                equalsAndSetColor(currentService1.getHashes(), currentService2.getHashes(), "sha256", auxiliaryList, "sha256", ERROR);
-            }
-            servicesResult2.addAll(auxiliaryList);
-        });
+        if(!servicesMinSize.isEmpty() && !servicesMaxSize.isEmpty()){
+            comparedServices.keySet().forEach(key -> {
+                com.company.pojo.Service currentService1 = servicesMinSize.get(key);
+                com.company.pojo.Service currentService2 = servicesMaxSize.get(comparedServices.get(key));
+                servicesResult1.addAll(setColorEveryWhere(Arrays.asList(currentService1.toString().split("\n")), DEFAULT));
+                List<String> auxiliaryList = new ArrayList<>(setColorEveryWhere(Arrays.asList(currentService2.toString().split("\n")), DEFAULT));
+                equalsAndSetColor(currentService1, currentService2, "serviceShortName", auxiliaryList, "service-short-name", WARNING);
+                equalsAndSetColor(currentService1, currentService2, "serviceName", auxiliaryList, "service_name", ERROR);
+                equalsAndSetColor(currentService1, currentService2, "artifactType", auxiliaryList, "artifact_type", ERROR);
+                equalsAndSetColor(currentService1, currentService2, "dockerRegistry", auxiliaryList, "docker_registry", ERROR);
+                equalsAndSetColor(currentService1, currentService2, "dockerImageName", auxiliaryList, "docker_image_name", ERROR);
+                equalsAndSetColor(currentService1, currentService2, "dockerTag", auxiliaryList, "docker_tag", ERROR);
+                equalsAndSetColor(currentService1, currentService2, "force", auxiliaryList, "force", WARNING);
+                equalsAndSetColor(currentService1, currentService2, "gitRepository", auxiliaryList, "github_repository", WARNING);
+                equalsAndSetColor(currentService1, currentService2, "githubBranch", auxiliaryList, "github_branch", WARNING);
+                equalsAndSetColor(currentService1, currentService2, "githubBash", auxiliaryList, "github_hash", WARNING);
+                if (!currentService1.getHashes().equals(currentService2.getHashes())) {
+                    equalsAndSetColor(currentService1.getHashes(), currentService2.getHashes(), "sha1", auxiliaryList, "sha1", ERROR);
+                    equalsAndSetColor(currentService1.getHashes(), currentService2.getHashes(), "sha256", auxiliaryList, "sha256", ERROR);
+                }
+                servicesResult2.addAll(auxiliaryList);
+            });
+        }
         servicesResult1.addAll(getAdditionalForPrint(additionalFromServicesMinSize.keySet(), servicesMinSize).get(0));
         servicesResult2.addAll(getAdditionalForPrint(additionalFromServicesMinSize.keySet(), servicesMinSize).get(1));
         servicesResult1.addAll(getAdditionalForPrint(additionalFromServicesMaxSize.keySet(), servicesMaxSize).get(1));
         servicesResult2.addAll(getAdditionalForPrint(additionalFromServicesMaxSize.keySet(), servicesMaxSize).get(0));
-        if(!config1.getServices().isEmpty())
+        if (!servicesMinSize.isEmpty())
             servicesResult1.set(searchLastNeedElementIgnoreColor(servicesResult1, "},"), "}");
-        if(!config2.getServices().isEmpty())
-            servicesResult2.set(searchLastNeedElementIgnoreColor(servicesResult2, "},"), "}");
-        servicesResult1.add("\"services\": [");
-        servicesResult2.add("\"services\": [");
+        if (!servicesMaxSize.isEmpty())
+           servicesResult2.set(searchLastNeedElementIgnoreColor(servicesResult2, "},"), "}");
+        servicesResult1.add(0,"\"services\": [");
+        servicesResult2.add(0,"\"services\": [");
         servicesResult1.add("],");
         servicesResult2.add("],");
         result.add(servicesResult1);
