@@ -66,7 +66,7 @@ public class ComparisonService {
                     result.put(i, -1);
                     break;
                 }
-                if(Collections.min(gradesMax.get(immutableList.indexOf(bestGrade))) == bestGrade) {
+                if(Collections.min(gradesMax.get(immutableList.indexOf(bestGrade))) == bestGrade && !result.containsKey(immutableList.indexOf(bestGrade))) {
                     result.put(i, immutableList.indexOf(bestGrade));
                     break;
                 }
@@ -104,14 +104,14 @@ public class ComparisonService {
                 additionalServices2.put(i, -1);
             }
         }
-        /*System.out.println("gradesMin");
+        System.out.println("gradesMin");
         gradesMin.forEach(System.out::println);
         System.out.println("gradesMax");
         gradesMax.forEach(System.out::println);
         System.out.println("comparedServicesAndAdditionalServices1");
         System.out.println(comparedServicesAndAdditionalServices1);
         System.out.println("additionalServices2");
-        System.out.println(additionalServices2);*/
+        System.out.println(additionalServices2);
         List<String> servicesResult1 = new ArrayList<>();
         List<String> servicesResult2 = new ArrayList<>();
         servicesResult1.add("\"services\": [");
