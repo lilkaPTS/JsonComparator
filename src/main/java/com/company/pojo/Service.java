@@ -47,18 +47,6 @@ public class Service implements Comparable<Service> {
         return Objects.hash(serviceName, artifactType, dockerRegistry, dockerImageName, dockerTag, hashes);
     }
 
-//    @Override
-//    public int compareTo(Service o) {
-//        int result = 1;
-//        result*=this.serviceName.equals(o.serviceName) ? 1 : 2;
-//        result*=this.artifactType.equals(o.artifactType) ? 1 : 3;
-//        result*=this.dockerRegistry.equals(o.dockerRegistry) ? 1 : 5;
-//        result*=this.dockerImageName.equals(o.dockerImageName) ? 1 : 7;
-//        result*=this.dockerTag.equals(o.dockerTag) ? 1 : 11;
-//        result*=this.hashes.equals(o.hashes) ? 1 : 13;
-//        return result==1 ? 0 : result;
-//    }
-
     @Override
     public int compareTo(Service o) {
         int result = 0;
@@ -91,18 +79,6 @@ public class Service implements Comparable<Service> {
         result+=this.hashes.equals(o.hashes) ? 0 : 24;
         return result;
     }
-
-//    @Override
-//    public int compareTo(Service o) {
-//        int result = 1;
-//        result*=this.serviceName.equals(o.serviceName) ? 1 : 2;
-//        result*=this.artifactType.equals(o.artifactType) ? 1 : 3;
-//        result*=this.dockerRegistry.equals(o.dockerRegistry) ? 1 : 5;
-//        result*=this.dockerImageName.equals(o.dockerImageName) ? 1 : 7;
-//        result*=this.dockerTag.equals(o.dockerTag) ? 1 : 11;
-//        result*=this.hashes.equals(o.hashes) ? 1 : 13;
-//        return result==1 ? 0 : result;
-//    }
 
     @Override
     public String toString() {
