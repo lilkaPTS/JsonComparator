@@ -68,15 +68,18 @@ public class ComparisonService {
         Map<Integer, Integer> additionalServices = new HashMap<>();
 
         List<List<Integer>> gradesMin = config1Services.size() <= config2Services.size() ?
-                getGrades(config1.getServices(), config2.getServices()) :
-                getGrades(config2.getServices(), config1.getServices());
-        List<List<Integer>> gradesMax = config1Services.size() >= config2Services.size() ?
-                getGrades(config1.getServices(), config2.getServices()) :
-                getGrades(config2.getServices(), config1.getServices());
+                    getGrades(config1.getServices(), config2.getServices()) :
+                    getGrades(config2.getServices(), config1.getServices());
+
+        List<List<Integer>> gradesMax = config1Services.size() >= config2Services.size()
+                && !gradesMin.equals(getGrades(config1.getServices(), config2.getServices()))?
+                    getGrades(config1.getServices(), config2.getServices()) :
+                    getGrades(config2.getServices(), config1.getServices());
+
 
         for (int i = 0; i < gradesMin.size(); i++) {
-            List<Integer> immutableList = gradesMin.get(i);
-            List<Integer> currentGrades = gradesMin.get(i);
+            List<Integer> immutableList = new ArrayList<>(gradesMin.get(i));
+            List<Integer> currentGrades = new ArrayList<>(gradesMin.get(i));
             int bestGrade = -1;
             for (int j = 0; j < immutableList.size(); j++) {
                 bestGrade = Collections.min(currentGrades);
@@ -102,14 +105,14 @@ public class ComparisonService {
             }
         }
 
-//        System.out.println("gradesMin");
-//        gradesMin.forEach(System.out::println);
-//        System.out.println("gradesMax");
-//        gradesMax.forEach(System.out::println);
-//        System.out.println("services");
-//        System.out.println(services);
-//        System.out.println("additionalServices");
-//        System.out.println(additionalServices);
+        System.out.println("gradesMin");
+        gradesMin.forEach(System.out::println);
+        System.out.println("gradesMax");
+        gradesMax.forEach(System.out::println);
+        System.out.println("services");
+        System.out.println(services);
+        System.out.println("additionalServices");
+        System.out.println(additionalServices);
 
         List<String> servicesResult1 = new ArrayList<>();
         List<String> servicesResult2 = new ArrayList<>();
@@ -121,7 +124,65 @@ public class ComparisonService {
         services.keySet().forEach(key -> {
             if(services.get(key) != -1) {
                 servicesResult1.addAll(setColorEveryWhere(Arrays.asList(config1Services.get(key).toString().split("\n")), DEFAULT));
-                servicesResult2.addAll(setColorEveryWhere(Arrays.asList(config2Services.get(services.get(key)).toString().split("\n")), DEFAULT));
+                List<String> auxiliaryList = new ArrayList<>(setColorEveryWhere(Arrays.asList(config2Services.get(services.get(key)).toString().split("\n")), DEFAULT));
+                com.company.pojo.Service currentService1 = config1Services.get(key);
+                com.company.pojo.Service currentService2 = config2Services.get(services.get(key));
+                List<Integer> inconsistenciesList = getMultipliersV2(currentService1.compareTo(currentService2));
+                if(inconsistenciesList.contains(2)) {
+                    setColor(auxiliaryList, "service_name", ERROR);
+                }
+                if(inconsistenciesList.contains(3)) {
+                    setColor(auxiliaryList, "artifact_type", ERROR);
+                }
+                if(inconsistenciesList.contains(5)) {
+                    setColor(auxiliaryList, "docker_registry", ERROR);
+                }
+                if(inconsistenciesList.contains(7)) {
+                    setColor(auxiliaryList, "docker_image_name", ERROR);
+                }
+                if(inconsistenciesList.contains(11)) {
+                    setColor(auxiliaryList, "docker_tag", ERROR);
+                }
+                if(inconsistenciesList.contains(13)) {
+                    List<Integer> inconsistenciesHashes = getMultipliersV2(config1Services.get(key).getHashes().compareTo(config2Services.get(services.get(key)).getHashes()));
+                    if(inconsistenciesHashes.contains(2)) {
+                        setColor(auxiliaryList, "sha1", ERROR);
+                    }
+                    if(inconsistenciesHashes.contains(3)) {
+                        setColor(auxiliaryList, "sha256", ERROR);
+                    }
+                }
+//                if(currentService1.getServiceName() != null &&
+//                        currentService1.getServiceShortName().equals(currentService2.getServiceShortName())) {
+//                    setColor(auxiliaryList, "service-short-name", WARNING);
+//                } else if(currentService1.getServiceName() == null && currentService2.getServiceName() != null) {
+//                    setColor(auxiliaryList, "service-short-name", WARNING);
+//                }
+                /*if(currentService1.getf) != null &&
+                        currentService1.getServiceShortName().equals(currentService2.getServiceShortName())) {
+                    setColor(auxiliaryList, "service-short-name", WARNING);
+                } else if(currentService1.getServiceName() == null && currentService2.getServiceName() != null) {
+                    setColor(auxiliaryList, "service-short-name", WARNING);
+                }
+                if(currentService1.getServiceName() != null &&
+                        currentService1.getServiceShortName().equals(currentService2.getServiceShortName())) {
+                    setColor(auxiliaryList, "service-short-name", WARNING);
+                } else if(currentService1.getServiceName() == null && currentService2.getServiceName() != null) {
+                    setColor(auxiliaryList, "service-short-name", WARNING);
+                }
+                if(currentService1.getServiceName() != null &&
+                        currentService1.getServiceShortName().equals(currentService2.getServiceShortName())) {
+                    setColor(auxiliaryList, "service-short-name", WARNING);
+                } else if(currentService1.getServiceName() == null && currentService2.getServiceName() != null) {
+                    setColor(auxiliaryList, "service-short-name", WARNING);
+                }
+                if(currentService1.getServiceName() != null &&
+                        currentService1.getServiceShortName().equals(currentService2.getServiceShortName())) {
+                    setColor(auxiliaryList, "service-short-name", WARNING);
+                } else if(currentService1.getServiceName() == null && currentService2.getServiceName() != null) {
+                    setColor(auxiliaryList, "service-short-name", WARNING);
+                }*/
+                servicesResult2.addAll(auxiliaryList);
             } else {
                 List<String> auxiliaryList = new ArrayList<>();
                 for (int i = 0; i < config1Services.get(key).toString().split("\n").length; i++) {
