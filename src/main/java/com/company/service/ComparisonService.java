@@ -98,8 +98,13 @@ public class ComparisonService {
             index = searchLastNeedElementIgnoreColor(result2, "},");
             result2.set(index, result2.get(index).replaceAll("},", "}"));
         }
-        result.add(result1);
-        result.add(result2);
+        if(objectList1.equals(listMinSize)) {
+            result.add(result1);
+            result.add(result2);
+        } else {
+            result.add(result2);
+            result.add(result1);
+        }
         return result;
     }
 
