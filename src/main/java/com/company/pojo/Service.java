@@ -55,11 +55,11 @@ public class Service implements Comparable<Service> {
         } else if(o.serviceShortName!=null) {
             ++result;
         }
-        result+=this.serviceName.equals(o.serviceName) ? 0 : 12;
-        result+=this.artifactType.equals(o.artifactType) ? 0 : 12;
-        result+=this.dockerRegistry.equals(o.dockerRegistry) ? 0 : 12;
-        result+=this.dockerImageName.equals(o.dockerImageName) ? 0 : 12;
-        result+=this.dockerTag.equals(o.dockerTag) ? 0 : 12;
+        result+=this.serviceName.equals(o.serviceName) ? 0 : 50;
+        result+=this.artifactType.equals(o.artifactType) ? 0 : 50;
+        result+=this.dockerRegistry.equals(o.dockerRegistry) ? 0 : 50;
+        result+=this.dockerImageName.equals(o.dockerImageName) ? 0 : 50;
+        result+=this.dockerTag.equals(o.dockerTag) ? 0 : 50;
         result+=this.force == o.force ? 0 : 1;
         if(this.gitRepository!=null){
             result+=this.gitRepository.equals(o.gitRepository) ? 0 : 1;
@@ -76,7 +76,7 @@ public class Service implements Comparable<Service> {
         } else if(o.githubBash!=null) {
             ++result;
         }
-        result+=this.hashes.equals(o.hashes) ? 0 : 24;
+        result+=this.hashes.equals(o.hashes) ? 0 : 50;
         return result;
     }
 

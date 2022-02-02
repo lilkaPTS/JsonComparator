@@ -2,6 +2,8 @@ package com.company.service;
 
 import com.company.model.ConfigFile;
 import com.company.model.ResponseView;
+import com.company.pojo.Hashes;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -19,7 +21,7 @@ public class ComparisonService {
     public ResponseView execute(ConfigFile config1, ConfigFile config2) {
         ResponseView result = new ResponseView();
         List<List<String>> metadata = getMetadata(config1, config2);
-        List<List<String>> services = getServices(config1, config2);
+        List<List<String>> services = getArray(config1.getServices(), config2.getServices());
 
         result.add("{");
 
@@ -44,6 +46,93 @@ public class ComparisonService {
         return result;
     }
 
+    public <T extends Comparable<T>> int getWorstGrade(T obj, boolean withAdditional) {
+        int result = 0;
+        for (Field field: obj.getClass().getDeclaredFields()) {
+            JsonProperty jsonProperty = field.getDeclaredAnnotation(JsonProperty.class);
+            if(withAdditional) {
+                result+=jsonProperty.required() ? 50:1;
+            } else {
+                result+=jsonProperty.required() ? 50:0;
+            }
+        }
+        return result;
+    }
+
+    public <T extends Comparable<T>> List<List<String>> getArray(List<T> objectList1, List<T> objectList2) {
+        List<List<String>> result = new ArrayList<>();
+        List<T> listMinSize = objectList1.size() <= objectList2.size() ? objectList1 : objectList2;
+        List<T> listMaxSize = listMinSize.equals(objectList1) ? objectList2 : objectList1;
+        List<List<Integer>> gradesMin = getGrades(listMinSize, listMaxSize);
+        List<List<Integer>> gradesMax = getGrades(listMaxSize, listMinSize);
+        List<String> result1 = new ArrayList<>(); // MinSize
+        List<String> result2 = new ArrayList<>(); // MaxSize
+        //key-minSize, value-maxSize
+        if(!listMaxSize.isEmpty()) {
+            Map<Integer, Integer> comparedObject = new HashMap<>(elementMatcher(gradesMin, gradesMax, getWorstGrade(listMaxSize.get(0), false)));
+            Map<Integer, Integer> additionalFromListMinSize = new HashMap<>();
+            Map<Integer, Integer> additionalFromListMaxSize = new HashMap<>();
+            List<Integer> skipFromListMinSize = new ArrayList<>(comparedObject.keySet());
+            List<Integer> skipFromListMaxSize = new ArrayList<>(comparedObject.values());
+            for (int i = 0; i < listMinSize.size(); i++) {
+                if (!skipFromListMinSize.contains(i)) {
+                    additionalFromListMinSize.put(i, -1);
+                }
+            }
+            for (int i = 0; i < listMaxSize.size(); i++) {
+                if (!skipFromListMaxSize.contains(i)) {
+                    additionalFromListMaxSize.put(i, -1);
+                }
+            }
+            if(!listMinSize.isEmpty()){
+                comparedObject.keySet().forEach(key -> {
+                    T currentObject1 = listMinSize.get(key);
+                    T currentObject2 = listMaxSize.get(comparedObject.get(key));
+                    result1.addAll(setColorEveryWhere(Arrays.asList(currentObject1.toString().split("\n")), DEFAULT));
+                    result2.addAll(test1(currentObject1, currentObject2));
+                });
+            }
+            result1.addAll(getAdditionalForPrint(additionalFromListMinSize.keySet(), listMinSize).get(0));
+            result2.addAll(getAdditionalForPrint(additionalFromListMinSize.keySet(), listMinSize).get(1));
+            result1.addAll(getAdditionalForPrint(additionalFromListMaxSize.keySet(), listMaxSize).get(1));
+            result2.addAll(getAdditionalForPrint(additionalFromListMaxSize.keySet(), listMaxSize).get(0));
+            if (!listMinSize.isEmpty())
+                result1.set(searchLastNeedElementIgnoreColor(result1, "},"), "}");
+            result2.set(searchLastNeedElementIgnoreColor(result2, "},"), "}");
+        }
+        result.add(result1);
+        result.add(result2);
+        return result;
+    }
+
+    public <T extends Comparable<T>> List<String> test1(T obj1, T obj2) {
+        List<String> result = new ArrayList<>(setColorEveryWhere(Arrays.asList(obj2.toString().split("\n")), DEFAULT));
+        List<String> elementNamePojo = new ArrayList<>();
+        List<String> elementNameJson = new ArrayList<>();
+        for (Field field: obj2.getClass().getDeclaredFields()) {
+            JsonProperty jsonProperty = field.getDeclaredAnnotation(JsonProperty.class);
+            if("hashes".equals(field.getName())) {
+                try {
+                    field.setAccessible(true);
+                    if(field.get(obj2) instanceof Hashes) {
+                        for (Field field1: Hashes.class.getDeclaredFields()) {
+                            JsonProperty jsonProperty1 = field1.getDeclaredAnnotation(JsonProperty.class);
+                            equalsAndSetColor(field.get(obj1), field.get(obj2), field1.getName(), result, jsonProperty1.value(), ERROR);
+                        }
+                    }
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+            if(jsonProperty.required()) {
+                equalsAndSetColor(obj1, obj2, field.getName(), result, jsonProperty.value(), ERROR);
+            } else {
+                equalsAndSetColor(obj1, obj2, field.getName(), result, jsonProperty.value(), WARNING);
+            }
+        }
+        return result;
+    }
+
     public List<List<String>> getServices(ConfigFile config1, ConfigFile config2) {
         List<List<String>> result = new ArrayList<>();
         List<com.company.pojo.Service> servicesMinSize = config1.getServices().size() <= config2.getServices().size() ?
@@ -53,7 +142,7 @@ public class ComparisonService {
         List<List<Integer>> gradesMin = getGrades(servicesMinSize, servicesMaxSize);
         List<List<Integer>> gradesMax = getGrades(servicesMaxSize, servicesMinSize);
         //key-minSizeServices, value-maxSizeServices
-        Map<Integer, Integer> comparedServices = new HashMap<>(elementMatcher(gradesMin, gradesMax, 84));
+        Map<Integer, Integer> comparedServices = new HashMap<>(elementMatcher(gradesMin, gradesMax, getWorstGrade(new com.company.pojo.Service(), false)));
         Map<Integer, Integer> additionalFromServicesMinSize = new HashMap<>();
         Map<Integer, Integer> additionalFromServicesMaxSize = new HashMap<>();
         List<Integer> skipFromServicesMinSize = new ArrayList<>(comparedServices.keySet());
@@ -137,7 +226,7 @@ public class ComparisonService {
                 if(bestGrade >= gradesWorst) {
                     break;
                 }
-                if(Collections.min(gradesMax.get(immutableList.indexOf(bestGrade))) == bestGrade){// && !result.containsKey(immutableList.indexOf(bestGrade))) {
+                if(Collections.min(gradesMax.get(immutableList.indexOf(bestGrade))) == bestGrade && !result.containsKey(immutableList.indexOf(bestGrade))) {
                     result.put(i, immutableList.indexOf(bestGrade));
                     break;
                 }
@@ -175,12 +264,12 @@ public class ComparisonService {
         return Collections.max(indexes);
     }
 
-    public List<List<Integer>> getGrades(List<com.company.pojo.Service> list1, List<com.company.pojo.Service> list2) {
+    public <T extends Comparable<T>> List<List<Integer>> getGrades(List<T> list1, List<T> list2) {
         List<List<Integer>> result = new ArrayList<>();
-        for (com.company.pojo.Service service1 : list1) {
+        for (T obj1 : list1) {
             List<Integer> currentGrades = new ArrayList<>();
-            for (com.company.pojo.Service service2 : list2) {
-                currentGrades.add(service1.compareTo(service2));
+            for (T obj2 : list2) {
+                currentGrades.add(obj1.compareTo(obj2));
             }
             result.add(currentGrades);
         }
