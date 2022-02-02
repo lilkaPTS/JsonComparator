@@ -22,7 +22,7 @@ public class ComparisonService {
         ResponseView result = new ResponseView();
         List<List<String>> metadata = getMetadata(config1, config2);
         List<List<String>> services = getArray(config1.getServices(), config2.getServices());
-        //List<List<String>> script = getArray(config1.getScript(), config2.getScript());
+        List<List<String>> script = getArray(config1.getScript(), config2.getScript());
         result.add("{");
 
         metadata.get(0).forEach(result::add1);
@@ -32,6 +32,12 @@ public class ComparisonService {
         services.get(0).forEach(result::add1);
         services.get(1).forEach(result::add2);
         result.add("],");
+
+        result.add("\"script\": [");
+        script.get(0).forEach(result::add1);
+        script.get(1).forEach(result::add2);
+        result.add("],");
+
         result.add("}");
         return result;
     }
