@@ -22,20 +22,21 @@ public class ComparisonService {
         ResponseView result = new ResponseView();
         List<List<String>> metadata = getMetadata(config1, config2);
         List<List<String>> services = getArray(config1.getServices(), config2.getServices());
-
+        //List<List<String>> script = getArray(config1.getScript(), config2.getScript());
         result.add("{");
 
         metadata.get(0).forEach(result::add1);
         metadata.get(1).forEach(result::add2);
 
+        result.add("\"services\": [");
         services.get(0).forEach(result::add1);
         services.get(1).forEach(result::add2);
-
+        result.add("],");
         result.add("}");
         return result;
     }
 
-    public List<List<String>> getMetadata(ConfigFile config1, ConfigFile config2) {
+    private List<List<String>> getMetadata(ConfigFile config1, ConfigFile config2) {
         List<List<String>> result = new ArrayList<>();
         List<String> metadata1 = new ArrayList<>(setColorEveryWhere(Arrays.asList(config1.getMetadata().toString().split("\n")), DEFAULT));
         List<String> metadata2 = new ArrayList<>(setColorEveryWhere(Arrays.asList(config2.getMetadata().toString().split("\n")), DEFAULT));
@@ -46,20 +47,7 @@ public class ComparisonService {
         return result;
     }
 
-    public <T extends Comparable<T>> int getWorstGrade(T obj, boolean withAdditional) {
-        int result = 0;
-        for (Field field: obj.getClass().getDeclaredFields()) {
-            JsonProperty jsonProperty = field.getDeclaredAnnotation(JsonProperty.class);
-            if(withAdditional) {
-                result+=jsonProperty.required() ? 50:1;
-            } else {
-                result+=jsonProperty.required() ? 50:0;
-            }
-        }
-        return result;
-    }
-
-    public <T extends Comparable<T>> List<List<String>> getArray(List<T> objectList1, List<T> objectList2) {
+    private <T extends Comparable<T>> List<List<String>> getArray(List<T> objectList1, List<T> objectList2) {
         List<List<String>> result = new ArrayList<>();
         List<T> listMinSize = objectList1.size() <= objectList2.size() ? objectList1 : objectList2;
         List<T> listMaxSize = listMinSize.equals(objectList1) ? objectList2 : objectList1;
@@ -89,26 +77,41 @@ public class ComparisonService {
                     T currentObject1 = listMinSize.get(key);
                     T currentObject2 = listMaxSize.get(comparedObject.get(key));
                     result1.addAll(setColorEveryWhere(Arrays.asList(currentObject1.toString().split("\n")), DEFAULT));
-                    result2.addAll(test1(currentObject1, currentObject2));
+                    result2.addAll(fieldEnumerator(currentObject1, currentObject2));
                 });
             }
             result1.addAll(getAdditionalForPrint(additionalFromListMinSize.keySet(), listMinSize).get(0));
             result2.addAll(getAdditionalForPrint(additionalFromListMinSize.keySet(), listMinSize).get(1));
             result1.addAll(getAdditionalForPrint(additionalFromListMaxSize.keySet(), listMaxSize).get(1));
             result2.addAll(getAdditionalForPrint(additionalFromListMaxSize.keySet(), listMaxSize).get(0));
-            if (!listMinSize.isEmpty())
-                result1.set(searchLastNeedElementIgnoreColor(result1, "},"), "}");
-            result2.set(searchLastNeedElementIgnoreColor(result2, "},"), "}");
+            int index;
+            if (!listMinSize.isEmpty()) {
+                index = searchLastNeedElementIgnoreColor(result1, "},");
+                result1.set(index, result1.get(index).replaceAll("},", "}"));
+            }
+            index = searchLastNeedElementIgnoreColor(result2, "},");
+            result2.set(index, result2.get(index).replaceAll("},", "}"));
         }
         result.add(result1);
         result.add(result2);
         return result;
     }
 
-    public <T extends Comparable<T>> List<String> test1(T obj1, T obj2) {
+    private <T> int getWorstGrade(T obj, boolean withAdditional) {
+        int result = 0;
+        for (Field field: obj.getClass().getDeclaredFields()) {
+            JsonProperty jsonProperty = field.getDeclaredAnnotation(JsonProperty.class);
+            if(withAdditional) {
+                result+=jsonProperty.required() ? 50:1;
+            } else {
+                result+=jsonProperty.required() ? 50:0;
+            }
+        }
+        return result;
+    }
+
+    private <T> List<String> fieldEnumerator(T obj1, T obj2) {
         List<String> result = new ArrayList<>(setColorEveryWhere(Arrays.asList(obj2.toString().split("\n")), DEFAULT));
-        List<String> elementNamePojo = new ArrayList<>();
-        List<String> elementNameJson = new ArrayList<>();
         for (Field field: obj2.getClass().getDeclaredFields()) {
             JsonProperty jsonProperty = field.getDeclaredAnnotation(JsonProperty.class);
             if("hashes".equals(field.getName())) {
@@ -133,73 +136,7 @@ public class ComparisonService {
         return result;
     }
 
-    public List<List<String>> getServices(ConfigFile config1, ConfigFile config2) {
-        List<List<String>> result = new ArrayList<>();
-        List<com.company.pojo.Service> servicesMinSize = config1.getServices().size() <= config2.getServices().size() ?
-                config1.getServices() : config2.getServices();
-        List<com.company.pojo.Service> servicesMaxSize = servicesMinSize.equals(config1.getServices()) ?
-                config2.getServices() : config1.getServices();
-        List<List<Integer>> gradesMin = getGrades(servicesMinSize, servicesMaxSize);
-        List<List<Integer>> gradesMax = getGrades(servicesMaxSize, servicesMinSize);
-        //key-minSizeServices, value-maxSizeServices
-        Map<Integer, Integer> comparedServices = new HashMap<>(elementMatcher(gradesMin, gradesMax, getWorstGrade(new com.company.pojo.Service(), false)));
-        Map<Integer, Integer> additionalFromServicesMinSize = new HashMap<>();
-        Map<Integer, Integer> additionalFromServicesMaxSize = new HashMap<>();
-        List<Integer> skipFromServicesMinSize = new ArrayList<>(comparedServices.keySet());
-        List<Integer> skipFromServicesMaxSize = new ArrayList<>(comparedServices.values());
-        for (int i = 0; i < servicesMinSize.size(); i++) {
-            if (!skipFromServicesMinSize.contains(i)) {
-                additionalFromServicesMinSize.put(i, -1);
-            }
-        }
-        for (int i = 0; i < servicesMaxSize.size(); i++) {
-            if (!skipFromServicesMaxSize.contains(i)) {
-                additionalFromServicesMaxSize.put(i, -1);
-            }
-        }
-        List<String> servicesResult1 = new ArrayList<>(); // servicesMinSize
-        List<String> servicesResult2 = new ArrayList<>(); // servicesMaxSize
-        if(!servicesMinSize.isEmpty() && !servicesMaxSize.isEmpty()){
-            comparedServices.keySet().forEach(key -> {
-                com.company.pojo.Service currentService1 = servicesMinSize.get(key);
-                com.company.pojo.Service currentService2 = servicesMaxSize.get(comparedServices.get(key));
-                servicesResult1.addAll(setColorEveryWhere(Arrays.asList(currentService1.toString().split("\n")), DEFAULT));
-                List<String> auxiliaryList = new ArrayList<>(setColorEveryWhere(Arrays.asList(currentService2.toString().split("\n")), DEFAULT));
-                equalsAndSetColor(currentService1, currentService2, "serviceShortName", auxiliaryList, "service-short-name", WARNING);
-                equalsAndSetColor(currentService1, currentService2, "serviceName", auxiliaryList, "service_name", ERROR);
-                equalsAndSetColor(currentService1, currentService2, "artifactType", auxiliaryList, "artifact_type", ERROR);
-                equalsAndSetColor(currentService1, currentService2, "dockerRegistry", auxiliaryList, "docker_registry", ERROR);
-                equalsAndSetColor(currentService1, currentService2, "dockerImageName", auxiliaryList, "docker_image_name", ERROR);
-                equalsAndSetColor(currentService1, currentService2, "dockerTag", auxiliaryList, "docker_tag", ERROR);
-                equalsAndSetColor(currentService1, currentService2, "force", auxiliaryList, "force", WARNING);
-                equalsAndSetColor(currentService1, currentService2, "gitRepository", auxiliaryList, "github_repository", WARNING);
-                equalsAndSetColor(currentService1, currentService2, "githubBranch", auxiliaryList, "github_branch", WARNING);
-                equalsAndSetColor(currentService1, currentService2, "githubBash", auxiliaryList, "github_hash", WARNING);
-                if (!currentService1.getHashes().equals(currentService2.getHashes())) {
-                    equalsAndSetColor(currentService1.getHashes(), currentService2.getHashes(), "sha1", auxiliaryList, "sha1", ERROR);
-                    equalsAndSetColor(currentService1.getHashes(), currentService2.getHashes(), "sha256", auxiliaryList, "sha256", ERROR);
-                }
-                servicesResult2.addAll(auxiliaryList);
-            });
-        }
-        servicesResult1.addAll(getAdditionalForPrint(additionalFromServicesMinSize.keySet(), servicesMinSize).get(0));
-        servicesResult2.addAll(getAdditionalForPrint(additionalFromServicesMinSize.keySet(), servicesMinSize).get(1));
-        servicesResult1.addAll(getAdditionalForPrint(additionalFromServicesMaxSize.keySet(), servicesMaxSize).get(1));
-        servicesResult2.addAll(getAdditionalForPrint(additionalFromServicesMaxSize.keySet(), servicesMaxSize).get(0));
-        if (!servicesMinSize.isEmpty())
-            servicesResult1.set(searchLastNeedElementIgnoreColor(servicesResult1, "},"), "}");
-        if (!servicesMaxSize.isEmpty())
-           servicesResult2.set(searchLastNeedElementIgnoreColor(servicesResult2, "},"), "}");
-        servicesResult1.add(0,"\"services\": [");
-        servicesResult2.add(0,"\"services\": [");
-        servicesResult1.add("],");
-        servicesResult2.add("],");
-        result.add(servicesResult1);
-        result.add(servicesResult2);
-        return result;
-    }
-
-    public void equalsAndSetColor(Object currentObject1, Object currentObject2, String elementNamePojo, List<String> list, String elementNameJson, String color) {
+    private void equalsAndSetColor(Object currentObject1, Object currentObject2, String elementNamePojo, List<String> list, String elementNameJson, String color) {
         try {
             Field field = currentObject1.getClass().getDeclaredField(elementNamePojo);
             field.setAccessible(true);
@@ -215,7 +152,7 @@ public class ComparisonService {
         }
     }
 
-    public Map<Integer, Integer> elementMatcher(List<List<Integer>> gradesMin, List<List<Integer>> gradesMax, int gradesWorst) {
+    private Map<Integer, Integer> elementMatcher(List<List<Integer>> gradesMin, List<List<Integer>> gradesMax, int gradesWorst) {
         Map<Integer, Integer> result =  new HashMap<>();
         for (int i = 0; i < gradesMin.size(); i++) {
             List<Integer> immutableList = new ArrayList<>(gradesMin.get(i));
@@ -239,7 +176,7 @@ public class ComparisonService {
         return result;
     }
 
-    public List<List<String>> getAdditionalForPrint(Collection<Integer> keys, List<?> list) {
+    private List<List<String>> getAdditionalForPrint(Collection<Integer> keys, List<?> list) {
         List<List<String>> result = new ArrayList<>();
         List<String> stringList = new ArrayList<>();
         List<String> spaceList = new ArrayList<>();
@@ -254,7 +191,7 @@ public class ComparisonService {
         return result;
     }
 
-    public int searchLastNeedElementIgnoreColor(List<String> list, String searchString) {
+    private int searchLastNeedElementIgnoreColor(List<String> list, String searchString) {
         List<Integer> indexes = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             if(list.get(i).matches("^" + searchString + ".*$")) {
@@ -264,7 +201,7 @@ public class ComparisonService {
         return Collections.max(indexes);
     }
 
-    public <T extends Comparable<T>> List<List<Integer>> getGrades(List<T> list1, List<T> list2) {
+    private <T extends Comparable<T>> List<List<Integer>> getGrades(List<T> list1, List<T> list2) {
         List<List<Integer>> result = new ArrayList<>();
         for (T obj1 : list1) {
             List<Integer> currentGrades = new ArrayList<>();
@@ -276,7 +213,7 @@ public class ComparisonService {
         return result;
     }
 
-    public void setColor(List<String> list, String element, String color) {
+    private void setColor(List<String> list, String element, String color) {
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i).matches("^\"" + element + "\" : .+$")) {
                 list.set(i, list.get(i).replaceAll(KEY_EXPRESSION + DEFAULT, KEY_EXPRESSION + color));
@@ -284,7 +221,7 @@ public class ComparisonService {
         }
     }
 
-    public List<String> setColorEveryWhere(List<String> input, String color) {
+    private List<String> setColorEveryWhere(List<String> input, String color) {
         for (int i = 0; i < input.size(); i++)
             input.set(i, input.get(i) + KEY_EXPRESSION + color);
         return input;
