@@ -13,7 +13,7 @@ import java.util.Objects;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArtifactObject1 implements ArtifactObject, Comparable<ArtifactObject1> {
+public class ArtifactObject1 implements ArtifactObject {
     @JsonProperty(value = "mvn", required = true)
     @NotEmpty
     private ArrayList<Mvn> mvn;
@@ -34,14 +34,6 @@ public class ArtifactObject1 implements ArtifactObject, Comparable<ArtifactObjec
     }
 
     @Override
-    public int compareTo(ArtifactObject1 o) {
-        int result = 0;
-        result+=this.mvn.equals(o.mvn) ? 0 : 50;
-        result+=this.targetRepository.equals(o.targetRepository) ? 0 : 50;
-        return result;
-    }
-
-    @Override
     public String toString() {
         StringBuilder mvnString = new StringBuilder();
         mvn.forEach(s -> mvnString.append(s).append("\n"));
@@ -51,5 +43,16 @@ public class ArtifactObject1 implements ArtifactObject, Comparable<ArtifactObjec
                 "],\n" +
                 "\"target_repository\" : \"" + targetRepository + "\"" +
                 "\n},";
+    }
+
+
+    @Override
+    public int compareTo(ArtifactObject o) {
+        int result = 0;
+        if(o instanceof ArtifactObject1) {
+            result+=this.mvn.equals(((ArtifactObject1) o).mvn) ? 0 : 50;
+            result+=this.targetRepository.equals(((ArtifactObject1) o).targetRepository) ? 0 : 50;
+        }
+        return result;
     }
 }

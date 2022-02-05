@@ -57,7 +57,7 @@ public class Script implements Comparable<Script>{
             ++result;
         }
         result+=this.scriptName.equals(o.scriptName) ? 0 : 50;
-        result+=this.hashes.equals(o.hashes) ? 0 : 50;
+        result+=this.hashes.compareTo(o.hashes);
         result+=this.url.equals(o.url) ? 0 : 50;
         return result;
     }

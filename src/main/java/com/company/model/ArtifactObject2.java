@@ -8,12 +8,13 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArtifactObject2 implements ArtifactObject, Comparable<ArtifactObject2> {
+public class ArtifactObject2 implements ArtifactObject {
 
     @JsonProperty(value = "service-short-name")
     private String serviceShortName;
@@ -26,6 +27,15 @@ public class ArtifactObject2 implements ArtifactObject, Comparable<ArtifactObjec
     private ArrayList<String> file;
     @JsonProperty(value = "target_repository", required = true)
     private String targetRepository;
+
+    public boolean isFileComparable(List<String> list1, List<String> list2) {
+        for(String element: list1) {
+            if(list2.contains(element)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -41,25 +51,6 @@ public class ArtifactObject2 implements ArtifactObject, Comparable<ArtifactObjec
     }
 
     @Override
-    public int compareTo(ArtifactObject2 o) {
-        int result = 0;
-        if(this.serviceShortName!=null){
-            result+=this.serviceShortName.equals(o.serviceShortName) ? 0 : 1;
-        } else if(o.serviceShortName!=null) {
-            ++result;
-        }
-        if(this.serviceName!=null){
-            result+=this.serviceName.equals(o.serviceName) ? 0 : 1;
-        } else if(o.serviceName!=null) {
-            ++result;
-        }
-        result+=this.hashes.equals(o.hashes) ? 0 : 50;
-        result+=this.file.equals(o.file) ? 0 : 50;
-        result+=this.targetRepository.equals(o.targetRepository) ? 0 : 50;
-        return result;
-    }
-
-    @Override
     public String toString() {
         StringBuilder fileString = new StringBuilder();
         file.forEach(s -> fileString.append(s).append("\n"));
@@ -72,5 +63,27 @@ public class ArtifactObject2 implements ArtifactObject, Comparable<ArtifactObjec
                 "],\n" +
                 "\"target_repository\" : \"" + targetRepository + "\"" +
                 "\n},";
+    }
+
+    @Override
+    public int compareTo(ArtifactObject o) {
+        int result = 0;
+        if(o instanceof ArtifactObject2) {
+            if(this.serviceShortName!=null){
+                result+=this.serviceShortName.equals(((ArtifactObject2) o).serviceShortName) ? 0 : 1;
+            } else if(((ArtifactObject2) o).serviceShortName!=null) {
+                ++result;
+            }
+            if(this.serviceName!=null){
+                result+=this.serviceName.equals(((ArtifactObject2) o).serviceName) ? 0 : 1;
+            } else if(((ArtifactObject2) o).serviceName!=null) {
+                ++result;
+            }
+            result+=this.hashes.compareTo(((ArtifactObject2) o).hashes);
+            result+=this.file.size() == ((ArtifactObject2) o).file.size()
+                    && ((ArtifactObject2) o).file.containsAll(this.file) ? 0 : 50;
+            result+=this.targetRepository.equals(((ArtifactObject2) o).targetRepository) ? 0 : 50;
+        }
+        return result;
     }
 }

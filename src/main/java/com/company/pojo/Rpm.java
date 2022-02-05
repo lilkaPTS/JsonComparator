@@ -38,7 +38,7 @@ public class Rpm implements Comparable<Rpm>{
         int result = 0;
         result+=this.url.equals(o.url) ? 0 : 50;
         result+=this.rpmRepositoryName.equals(o.rpmRepositoryName) ? 0 : 50;
-        result+=this.hashes.equals(o.hashes) ? 0 : 50;
+        result+=this.hashes.compareTo(o.hashes);
         if(this.serviceShortName!=null){
             result+=this.serviceShortName.equals(o.serviceShortName) ? 0 : 1;
         } else if(o.serviceShortName!=null) {

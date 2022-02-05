@@ -11,7 +11,7 @@ import java.util.Objects;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Hashes {
+public class Hashes implements Comparable<Hashes>{
     @JsonProperty(value = "sha1",required = true)
     private String sha1;
     @JsonProperty(value = "sha256",required = true)
@@ -36,5 +36,13 @@ public class Hashes {
                 "\"sha1\" : \"" + sha1 + "\",\n" +
                 "\"sha256\" : \"" + sha256 + "\"\n" +
                 "}";
+    }
+
+    @Override
+    public int compareTo(Hashes o) {
+        int result = 0;
+        result+= this.getSha1().equals(o.getSha1()) ? 0 : 50;
+        result+= this.getSha256().equals(o.getSha256()) ? 0 : 50;
+        return result;
     }
 }

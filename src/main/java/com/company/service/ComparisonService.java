@@ -1,7 +1,6 @@
 package com.company.service;
 
-import com.company.model.ConfigFile;
-import com.company.model.ResponseView;
+import com.company.model.*;
 import com.company.pojo.Hashes;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.stereotype.Service;
@@ -20,33 +19,70 @@ public class ComparisonService {
 
     public ResponseView execute(ConfigFile config1, ConfigFile config2) {
         ResponseView result = new ResponseView();
-        List<List<String>> metadata = getMetadata(config1, config2);
-        List<List<String>> services = getArray(config1.getServices(), config2.getServices());
-        List<List<String>> script = getArray(config1.getScript(), config2.getScript());
-        List<List<String>> rpm = getArray(config1.getRpm(), config2.getRpm());
+//        List<List<String>> metadata = getMetadata(config1, config2);
+//        List<List<String>> services = getArray(config1.getServices(), config2.getServices());
+        List<List<String>> artifacts = getArtifacts(config1.getArtifacts(), config2.getArtifacts());
+//        List<List<String>> script = getArray(config1.getScript(), config2.getScript());
+//        List<List<String>> rpm = getArray(config1.getRpm(), config2.getRpm());
         //config1.getServices().forEach(System.out::println);
-        config1.getArtifacts().forEach(System.out::println);
+        //config1.getArtifacts().forEach(System.out::println);
         result.add("{");
 
-        metadata.get(0).forEach(result::add1);
-        metadata.get(1).forEach(result::add2);
+//        metadata.get(0).forEach(result::add1);
+//        metadata.get(1).forEach(result::add2);
+//
+//        result.add("\"services\": [");
+//        services.get(0).forEach(result::add1);
+//        services.get(1).forEach(result::add2);
+//        result.add("],");
 
-        result.add("\"services\": [");
-        services.get(0).forEach(result::add1);
-        services.get(1).forEach(result::add2);
+        result.add("\"artifacts\": [");
+        artifacts.get(0).forEach(result::add1);
+        artifacts.get(1).forEach(result::add2);
         result.add("],");
 
-        result.add("\"script\": [");
-        script.get(0).forEach(result::add1);
-        script.get(1).forEach(result::add2);
-        result.add("],");
-
-        result.add("\"rpm\": [");
-        rpm.get(0).forEach(result::add1);
-        rpm.get(1).forEach(result::add2);
-        result.add("],");
+//        result.add("\"script\": [");
+//        script.get(0).forEach(result::add1);
+//        script.get(1).forEach(result::add2);
+//        result.add("],");
+//
+//        result.add("\"rpm\": [");
+//        rpm.get(0).forEach(result::add1);
+//        rpm.get(1).forEach(result::add2);
+//        result.add("],");
 
         result.add("}");
+        return result;
+    }
+
+    private List<List<String>> getArtifacts(List<ArtifactObject> list1, List<ArtifactObject> list2) {
+        List<List<String>> result = new ArrayList<>();
+        List<ArtifactObject> artifactObject1List1 = new ArrayList<>();
+        List<ArtifactObject> artifactObject2List1 = new ArrayList<>();
+        List<ArtifactObject> artifactObject1List2 = new ArrayList<>();
+        List<ArtifactObject> artifactObject2List2 = new ArrayList<>();
+        list1.forEach(element -> {
+            if("ArtifactObject1".equals(element.getClass().getSimpleName())) {
+                artifactObject1List1.add(element);
+            } else {
+                artifactObject2List1.add(element);
+            }
+        });
+        list2.forEach(element -> {
+            if("ArtifactObject1".equals(element.getClass().getSimpleName())) {
+                artifactObject1List2.add(element);
+            } else {
+                artifactObject2List2.add(element);
+            }
+        });
+        List<List<String>> artifactObject1Result = getArray(artifactObject1List1, artifactObject1List2);
+        List<List<String>> artifactObject2Result = getArray(artifactObject2List1, artifactObject2List2);
+        List<String> result1 = artifactObject2Result.get(0);
+        List<String> result2 = artifactObject2Result.get(1);
+        result1.addAll(artifactObject1Result.get(0));
+        result2.addAll(artifactObject1Result.get(1));
+        result.add(result1);
+        result.add(result2);
         return result;
     }
 
@@ -67,6 +103,8 @@ public class ComparisonService {
         List<T> listMaxSize = listMinSize.equals(objectList1) ? objectList2 : objectList1;
         List<List<Integer>> gradesMin = getGrades(listMinSize, listMaxSize);
         List<List<Integer>> gradesMax = getGrades(listMaxSize, listMinSize);
+        //gradesMin.forEach(System.out::println);
+        //gradesMax.forEach(System.out::println);
         List<String> result1 = new ArrayList<>(); // MinSize
         List<String> result2 = new ArrayList<>(); // MaxSize
         //key-minSize, value-maxSize
@@ -119,11 +157,18 @@ public class ComparisonService {
     private <T> int getWorstGrade(T obj, boolean withAdditional) {
         int result = 0;
         for (Field field: obj.getClass().getDeclaredFields()) {
+            field.setAccessible(true);
             JsonProperty jsonProperty = field.getDeclaredAnnotation(JsonProperty.class);
-            if(withAdditional) {
-                result+=jsonProperty.required() ? 50:1;
-            } else {
-                result+=jsonProperty.required() ? 50:0;
+            try {
+                if(field.get(obj) instanceof  Hashes) {
+                    result+=getWorstGrade(field.get(obj), false);
+                } else if(withAdditional) {
+                    result+=jsonProperty.required() ? 50:1;
+                } else {
+                    result+=jsonProperty.required() ? 50:0;
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
             }
         }
         return result;
@@ -145,8 +190,7 @@ public class ComparisonService {
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
-            }
-            if(jsonProperty.required()) {
+            } else if(jsonProperty.required()) {
                 equalsAndSetColor(obj1, obj2, field.getName(), result, jsonProperty.value(), ERROR);
             } else {
                 equalsAndSetColor(obj1, obj2, field.getName(), result, jsonProperty.value(), WARNING);

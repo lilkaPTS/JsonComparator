@@ -59,7 +59,7 @@ public class Mvn implements Comparable<Mvn>{
         }
         result+=this.mvnType.equals(o.mvnType) ? 0 : 50;
         result+=this.mvnRepository.equals(o.mvnRepository) ? 0 : 50;
-        result+=this.hashes.equals(o.hashes) ? 0 : 50;
+        result+=this.hashes.compareTo(o.hashes);
         return result;
     }
 

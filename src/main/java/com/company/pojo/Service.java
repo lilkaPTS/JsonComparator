@@ -76,7 +76,7 @@ public class Service implements Comparable<Service> {
         } else if(o.githubBash!=null) {
             ++result;
         }
-        result+=this.hashes.equals(o.hashes) ? 0 : 50;
+        result+=this.hashes.compareTo(o.hashes);
         return result;
     }
 

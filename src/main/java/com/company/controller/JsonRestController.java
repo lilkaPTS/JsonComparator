@@ -44,10 +44,8 @@ public class JsonRestController {
         if(errors.isEmpty()) {
             ConfigFile configFile1 = new ConfigFile(mapper.readValue(fileService.getFileContent(multipartFile1), JsonStructure.class));
             ConfigFile configFile2 = new ConfigFile(mapper.readValue(fileService.getFileContent(multipartFile2), JsonStructure.class));
+           // System.out.println(jsonService.getJsonPrettyString(configFile1).split("\"artifacts\" : \\[ \\{")[0].split("\n")[0].replace("\r", " ") + "213");
             result.setResponseView(comparisonService.execute(configFile1, configFile2));
-
-            //System.out.println(comparisonService.execute(configFile1, configFile2));
-            //System.out.println(configFile1.getServices().get(0));
         }
         return result;
     }
