@@ -19,22 +19,21 @@ public class ComparisonService {
 
     public ResponseView execute(ConfigFile config1, ConfigFile config2) {
         ResponseView result = new ResponseView();
-//        List<List<String>> metadata = getMetadata(config1, config2);
-//        List<List<String>> services = getArray(config1.getServices(), config2.getServices());
+        List<List<String>> metadata = getMetadata(config1, config2);
+        List<List<String>> services = getArray(config1.getServices(), config2.getServices());
         List<List<String>> artifacts = getArtifacts(config1.getArtifacts(), config2.getArtifacts());
-//        List<List<String>> script = getArray(config1.getScript(), config2.getScript());
-//        List<List<String>> rpm = getArray(config1.getRpm(), config2.getRpm());
-        //config1.getServices().forEach(System.out::println);
-        //config1.getArtifacts().forEach(System.out::println);
+        List<List<String>> script = getArray(config1.getScript(), config2.getScript());
+        List<List<String>> rpm = getArray(config1.getRpm(), config2.getRpm());
+
         result.add("{");
 
-//        metadata.get(0).forEach(result::add1);
-//        metadata.get(1).forEach(result::add2);
-//
-//        result.add("\"services\": [");
-//        services.get(0).forEach(result::add1);
-//        services.get(1).forEach(result::add2);
-//        result.add("],");
+        metadata.get(0).forEach(result::add1);
+        metadata.get(1).forEach(result::add2);
+
+        result.add("\"services\": [");
+        services.get(0).forEach(result::add1);
+        services.get(1).forEach(result::add2);
+        result.add("],");
 
 
         result.add("\"artifacts\": [");
@@ -42,15 +41,15 @@ public class ComparisonService {
         artifacts.get(1).forEach(result::add2);
         result.add("],");
 
-//        result.add("\"script\": [");
-//        script.get(0).forEach(result::add1);
-//        script.get(1).forEach(result::add2);
-//        result.add("],");
-//
-//        result.add("\"rpm\": [");
-//        rpm.get(0).forEach(result::add1);
-//        rpm.get(1).forEach(result::add2);
-//        result.add("],");
+        result.add("\"script\": [");
+        script.get(0).forEach(result::add1);
+        script.get(1).forEach(result::add2);
+        result.add("],");
+
+        result.add("\"rpm\": [");
+        rpm.get(0).forEach(result::add1);
+        rpm.get(1).forEach(result::add2);
+        result.add("],");
 
         result.add("}");
         return result;
@@ -62,22 +61,40 @@ public class ComparisonService {
         List<ArtifactObject> artifactObject2List1 = new ArrayList<>();
         List<ArtifactObject> artifactObject1List2 = new ArrayList<>();
         List<ArtifactObject> artifactObject2List2 = new ArrayList<>();
-        list1.forEach(element -> {
+        int mvnMaxSize = 0;
+        int fileMaxSize = 0;
+        for(ArtifactObject element : list1) {
             if("ArtifactObject1".equals(element.getClass().getSimpleName())) {
+                mvnMaxSize = Math.max(((ArtifactObject1) element).getMvn().size(), mvnMaxSize);
                 artifactObject1List1.add(element);
             } else {
+                fileMaxSize = Math.max(((ArtifactObject2) element).getFile().size(), fileMaxSize);
                 artifactObject2List1.add(element);
             }
-        });
-        list2.forEach(element -> {
+        }
+        for(ArtifactObject element : list2) {
             if("ArtifactObject1".equals(element.getClass().getSimpleName())) {
+                mvnMaxSize = Math.max(((ArtifactObject1) element).getMvn().size(), mvnMaxSize);
                 artifactObject1List2.add(element);
             } else {
+                fileMaxSize = Math.max(((ArtifactObject2) element).getFile().size(), fileMaxSize);
                 artifactObject2List2.add(element);
             }
-        });
-        List<List<String>> artifactObject1Result = getArray(artifactObject1List1, artifactObject1List2);
-        List<List<String>> artifactObject2Result = getArray(artifactObject2List1, artifactObject2List2);
+        }
+        System.out.println(mvnMaxSize);
+        System.out.println(fileMaxSize);
+        for (ArtifactObject element : artifactObject2List1) {
+            for (int i = 0; i < fileMaxSize - ((ArtifactObject2)element).getFile().size(); i++) {
+                ((ArtifactObject2)element).addFile(" ");
+            }
+        }
+        for (ArtifactObject element : artifactObject2List2) {
+            for (int i = 0; i < fileMaxSize - ((ArtifactObject2)element).getFile().size(); i++) {
+                ((ArtifactObject2)element).addFile(" ");
+            }
+        }
+        List<List<String>> artifactObject1Result = getArray(artifactObject1List1, artifactObject1List2, mvnMaxSize, fileMaxSize);
+        List<List<String>> artifactObject2Result = getArray(artifactObject2List1, artifactObject2List2, mvnMaxSize, fileMaxSize);
         List<String> result1 = artifactObject2Result.get(0);
         List<String> result2 = artifactObject2Result.get(1);
         result1.addAll(artifactObject1Result.get(0));
@@ -98,19 +115,20 @@ public class ComparisonService {
         return result;
     }
 
-    private <T extends Comparable<T>> List<List<String>> getArray(List<T> objectList1, List<T> objectList2) {
+    private <T extends Comparable<T>> List<List<String>> getArray(List<T> objectList1, List<T> objectList2, int ... collectionSizesInOrder) {
         List<List<String>> result = new ArrayList<>();
         List<T> listMinSize = objectList1.size() <= objectList2.size() ? objectList1 : objectList2;
         List<T> listMaxSize = listMinSize.equals(objectList1) ? objectList2 : objectList1;
-        List<List<Integer>> gradesMin = getGrades(listMinSize, listMaxSize);
-        List<List<Integer>> gradesMax = getGrades(listMaxSize, listMinSize);
+        List<List<Integer>> gradesMin = getGrades(listMinSize, listMaxSize, collectionSizesInOrder);
+        List<List<Integer>> gradesMax = getGrades(listMaxSize, listMinSize, collectionSizesInOrder);
         gradesMin.forEach(System.out::println);
         gradesMax.forEach(System.out::println);
         List<String> result1 = new ArrayList<>(); // MinSize
         List<String> result2 = new ArrayList<>(); // MaxSize
         //key-minSize, value-maxSize
         if(!listMaxSize.isEmpty()) {
-            Map<Integer, Integer> comparedObject = new HashMap<>(elementMatcher(gradesMin, gradesMax, getWorstGrade(listMaxSize.get(0), false)));
+            System.out.println(getWorstGrade(listMaxSize.get(0), collectionSizesInOrder));
+            Map<Integer, Integer> comparedObject = new HashMap<>(elementMatcher(gradesMin, gradesMax, getWorstGrade(listMaxSize.get(0), collectionSizesInOrder)));
             Map<Integer, Integer> additionalFromListMinSize = new HashMap<>();
             Map<Integer, Integer> additionalFromListMaxSize = new HashMap<>();
             List<Integer> skipFromListMinSize = new ArrayList<>(comparedObject.keySet());
@@ -162,16 +180,20 @@ public class ComparisonService {
         return result;
     }
 
-    private <T> int getWorstGrade(T obj, boolean withAdditional) {
+    private <T> int getWorstGrade(T obj, int ... collectionSizesInOrder) {
         int result = 0;
         for (Field field: obj.getClass().getDeclaredFields()) {
             field.setAccessible(true);
             JsonProperty jsonProperty = field.getDeclaredAnnotation(JsonProperty.class);
             try {
                 if(field.get(obj) instanceof  Hashes) {
-                    result+=getWorstGrade(field.get(obj), false);
-                } else if(withAdditional) {
-                    result+=jsonProperty.required() ? 50:1;
+                    result+=getWorstGrade(field.get(obj));
+                } else if(field.get(obj) instanceof List) {
+                    if(obj instanceof ArtifactObject1) {
+                        result+=collectionSizesInOrder[0]*50;
+                    } else if(obj instanceof ArtifactObject2) {
+                        result+=collectionSizesInOrder[1]*50;
+                    }
                 } else {
                     result+=jsonProperty.required() ? 50:0;
                 }
@@ -198,7 +220,11 @@ public class ComparisonService {
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
-            } else if(jsonProperty.required()) {
+            }
+//            else if("file".equals(field.getName())) {
+//
+//            }
+            else if(jsonProperty.required()) {
                 equalsAndSetColor(obj1, obj2, field.getName(), result, jsonProperty.value(), ERROR);
             } else {
                 equalsAndSetColor(obj1, obj2, field.getName(), result, jsonProperty.value(), WARNING);
@@ -276,12 +302,19 @@ public class ComparisonService {
         return Collections.max(indexes);
     }
 
-    private <T extends Comparable<T>> List<List<Integer>> getGrades(List<T> list1, List<T> list2) {
+    private <T extends Comparable<T>> List<List<Integer>> getGrades(List<T> list1, List<T> list2, int ... collectionSizesInOrder) {
         List<List<Integer>> result = new ArrayList<>();
         for (T obj1 : list1) {
             List<Integer> currentGrades = new ArrayList<>();
             for (T obj2 : list2) {
-                currentGrades.add(obj1.compareTo(obj2));
+                if(obj2 instanceof ArtifactObject1) {
+                    currentGrades.add(obj1.compareTo(obj2)+collectionSizesInOrder[0]*50);
+                } else if(obj2 instanceof ArtifactObject2) {
+                    currentGrades.add(obj1.compareTo(obj2)+collectionSizesInOrder[1]*50);
+                }
+                else {
+                    currentGrades.add(obj1.compareTo(obj2));
+                }
             }
             result.add(currentGrades);
         }
