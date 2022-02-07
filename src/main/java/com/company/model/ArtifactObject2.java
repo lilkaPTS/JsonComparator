@@ -28,13 +28,8 @@ public class ArtifactObject2 implements ArtifactObject {
     @JsonProperty(value = "target_repository", required = true)
     private String targetRepository;
 
-    public boolean isFileComparable(List<String> list1, List<String> list2) {
-        for(String element: list1) {
-            if(list2.contains(element)) {
-                return true;
-            }
-        }
-        return false;
+    public void addFile(String str) {
+        this.file.add(str);
     }
 
     @Override
@@ -80,8 +75,9 @@ public class ArtifactObject2 implements ArtifactObject {
                 ++result;
             }
             result+=this.hashes.compareTo(((ArtifactObject2) o).hashes);
-            result+=this.file.size() == ((ArtifactObject2) o).file.size()
-                    && ((ArtifactObject2) o).file.containsAll(this.file) ? 0 : 50;
+            for (String str: this.file) {
+                result-=((ArtifactObject2) o).file.contains(str) ? 50 : 0;
+            }
             result+=this.targetRepository.equals(((ArtifactObject2) o).targetRepository) ? 0 : 50;
         }
         return result;
