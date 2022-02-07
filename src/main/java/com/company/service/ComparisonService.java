@@ -36,6 +36,7 @@ public class ComparisonService {
 //        services.get(1).forEach(result::add2);
 //        result.add("],");
 
+
         result.add("\"artifacts\": [");
         artifacts.get(0).forEach(result::add1);
         artifacts.get(1).forEach(result::add2);
@@ -103,8 +104,8 @@ public class ComparisonService {
         List<T> listMaxSize = listMinSize.equals(objectList1) ? objectList2 : objectList1;
         List<List<Integer>> gradesMin = getGrades(listMinSize, listMaxSize);
         List<List<Integer>> gradesMax = getGrades(listMaxSize, listMinSize);
-        //gradesMin.forEach(System.out::println);
-        //gradesMax.forEach(System.out::println);
+        gradesMin.forEach(System.out::println);
+        gradesMax.forEach(System.out::println);
         List<String> result1 = new ArrayList<>(); // MinSize
         List<String> result2 = new ArrayList<>(); // MaxSize
         //key-minSize, value-maxSize
@@ -124,6 +125,13 @@ public class ComparisonService {
                     additionalFromListMaxSize.put(i, -1);
                 }
             }
+            System.out.println("comparedObject");
+            System.out.println(comparedObject);
+            System.out.println("additionalFromListMinSize");
+            System.out.println(additionalFromListMinSize);
+            System.out.println("additionalFromListMaxSize");
+            System.out.println(additionalFromListMaxSize);
+
             if(!listMinSize.isEmpty()){
                 comparedObject.keySet().forEach(key -> {
                     T currentObject1 = listMinSize.get(key);
@@ -220,20 +228,24 @@ public class ComparisonService {
         for (int i = 0; i < gradesMin.size(); i++) {
             List<Integer> immutableList = new ArrayList<>(gradesMin.get(i));
             List<Integer> currentGrades = new ArrayList<>(gradesMin.get(i));
-            int bestGrade = -1;
             for (int j = 0; j < immutableList.size(); j++) {
-                bestGrade = Collections.min(currentGrades);
+                int bestGrade = Collections.min(currentGrades);
                 if(bestGrade >= gradesWorst) {
                     break;
                 }
-                if(Collections.min(gradesMax.get(immutableList.indexOf(bestGrade))) == bestGrade && !result.containsKey(immutableList.indexOf(bestGrade))) {
-                    result.put(i, immutableList.indexOf(bestGrade));
-                    break;
+                if(Collections.min(gradesMax.get(immutableList.indexOf(bestGrade))) == bestGrade) {
+                    List<Integer> indexesOfBestGrade = new ArrayList<>();
+                    for (int k = 0; k < immutableList.size(); k++) {
+                        if(immutableList.get(k) == bestGrade && !result.containsValue(k)) {
+                            indexesOfBestGrade.add(k);
+                        }
+                    }
+                    if(!indexesOfBestGrade.isEmpty()) {
+                        result.put(i, indexesOfBestGrade.get(0));
+                        break;
+                    }
                 }
                 currentGrades.remove(new Integer(bestGrade));
-            }
-            if(bestGrade == -1) {
-                result.put(i, -1);
             }
         }
         return result;
