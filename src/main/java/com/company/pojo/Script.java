@@ -70,7 +70,7 @@ public class Script implements Comparable<Script>{
                 "\"end-point\" : \"" + endPoint + "\",\n" +
                 "\"script_name\" : \"" + scriptName + "\",\n" +
                 hashes +
-                "\"url\" : \"" + url + "\",\n" +
+                "\n\"url\" : \"" + url + "\"" +
                 "\n},";
     }
 }
