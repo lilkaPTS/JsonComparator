@@ -131,8 +131,7 @@ public class ComparisonService {
         //key-minSize, value-maxSize
         if(!listMaxSize.isEmpty()) {
             System.out.println(getWorstGrade(listMaxSize.get(0), collectionSizesInOrder));
-            //Map<Integer, Integer> comparedObject = new HashMap<>(elementMatcher(gradesMin, gradesMax, getWorstGrade(listMaxSize.get(0), collectionSizesInOrder)));
-            Map<Integer, Integer> comparedObject = new HashMap<>(test(gradesMin, getWorstGrade(listMaxSize.get(0))));
+            Map<Integer, Integer> comparedObject = new HashMap<>(elementMatcher(gradesMin, getWorstGrade(listMaxSize.get(0))));
             Map<Integer, Integer> additionalFromListMinSize = new HashMap<>();
             Map<Integer, Integer> additionalFromListMaxSize = new HashMap<>();
             List<Integer> skipFromListMinSize = new ArrayList<>(comparedObject.keySet());
@@ -253,45 +252,7 @@ public class ComparisonService {
         }
     }
 
-    private Map<Integer, Integer> mat(List<List<Integer>> gradesMin, List<List<Integer>> gradesMax, int gradesWorst) {
-        Map<Integer, Integer> result =  new HashMap<>();
-        for (int i = 0; i < gradesMin.size(); i++) {
-            List<Integer> immutableList = new ArrayList<>(gradesMin.get(i));
-            List<Integer> currentGrades = new ArrayList<>(gradesMin.get(i));
-            for (int j = 0; j < immutableList.size(); j++) {
-                int bestGrade = Collections.min(currentGrades);
-                if(bestGrade >= gradesWorst) {
-                    break;
-                }
-                int checkedIndexInGradesMax = immutableList.indexOf(bestGrade);
-                int supposedMinGrade = Collections.min(gradesMax.get(checkedIndexInGradesMax));
-                if(supposedMinGrade == bestGrade) {
-                    //////////////////
-                } else {
-                    int indexMinGrade = gradesMax.get(checkedIndexInGradesMax).indexOf(supposedMinGrade);
-                    int realMinGrade = Collections.min(gradesMin.get(indexMinGrade));
-                    if(supposedMinGrade != realMinGrade) {
-                        int realMinGradeIndex = gradesMin.get(indexMinGrade).indexOf(realMinGrade);
-                        if(!result.containsValue(realMinGradeIndex)) {
-                            //////////
-                        }
-                    } else {
-                        List<Integer> checkedIndexes = gradesMin.get(indexMinGrade).stream().filter(e -> e==realMinGrade).collect(Collectors.toList());
-                        if(checkedIndexes.size() > 1) {
-                            if(!result.values().containsAll(checkedIndexes)) {
-
-                            }
-                        }
-                    }
-
-                }
-            }
-        }
-
-        return result;
-    }
-
-    private Map<Integer, Integer> test(List<List<Integer>> gradesMin, int gradesWorst) {
+    private Map<Integer, Integer> elementMatcher(List<List<Integer>> gradesMin, int gradesWorst) {
         Map<Integer, Integer> result =  new HashMap<>();
         List<Integer> skipI = new ArrayList<>();
         List<Integer> skipJ = new ArrayList<>();
@@ -346,49 +307,13 @@ public class ComparisonService {
                     for (int i = 0; i < choiceList.size(); i++) {
                         minElement.add(Collections.min(choiceList.get(i)));
                     }
-                    result.put(key, minElement.indexOf(Collections.min(minElement)));
+                    result.put(key, listJ.get(minElement.indexOf(Collections.max(minElement))));
                     skipI.add(key);
-                    skipJ.add(minElement.indexOf(Collections.min(minElement)));
+                    skipJ.add(listJ.get(minElement.indexOf(Collections.max(minElement))));
                 }
                 bestGrade = gradesWorst;
             } else {
                 break;
-            }
-        }
-        return result;
-    }
-
-    private boolean isAlternatives(List<Integer> list, int supposedMinGrade) {
-        int count = (int) list.stream().filter(element -> element == supposedMinGrade).count();
-        int realMinGrade = Collections.min(list);
-        return supposedMinGrade != realMinGrade || count > 1;
-    }
-
-    private Map<Integer, Integer> elementMatcher(List<List<Integer>> gradesMin, List<List<Integer>> gradesMax, int gradesWorst) {
-        Map<Integer, Integer> result =  new HashMap<>();
-        for (int i = 0; i < gradesMin.size(); i++) {
-            List<Integer> immutableList = new ArrayList<>(gradesMin.get(i));
-            List<Integer> currentGrades = new ArrayList<>(gradesMin.get(i));
-            for (int j = 0; j < immutableList.size(); j++) {
-                int bestGrade = Collections.min(currentGrades);
-                if(bestGrade >= gradesWorst) {
-                    break;
-                }
-                if(Collections.min(gradesMax.get(immutableList.indexOf(bestGrade))) == bestGrade) {
-                    List<Integer> indexesOfBestGrade = new ArrayList<>();
-                    for (int k = 0; k < immutableList.size(); k++) {
-                        if(immutableList.get(k) == bestGrade && !result.containsValue(k)) {
-                            indexesOfBestGrade.add(k);
-                        }
-                    }
-                    if(!indexesOfBestGrade.isEmpty()) {
-                        result.put(i, indexesOfBestGrade.get(0));
-                        break;
-                    }
-                } else {
-
-                }
-                currentGrades.remove(new Integer(bestGrade));
             }
         }
         return result;
