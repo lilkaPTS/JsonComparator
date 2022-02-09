@@ -21,8 +21,8 @@ public class ComparisonService {
     public ResponseView execute(ConfigFile config1, ConfigFile config2) {
         ResponseView result = new ResponseView();
 //        List<List<String>> metadata = getMetadata(config1, config2);
-        List<List<String>> services = getArray(config1.getServices(), config2.getServices());
-//        List<List<String>> artifacts = getArtifacts(config1.getArtifacts(), config2.getArtifacts());
+//        List<List<String>> services = getArray(config1.getServices(), config2.getServices());
+        List<List<String>> artifacts = getArtifacts(config1.getArtifacts(), config2.getArtifacts());
 //        List<List<String>> script = getArray(config1.getScript(), config2.getScript());
 //        List<List<String>> rpm = getArray(config1.getRpm(), config2.getRpm());
 
@@ -31,16 +31,16 @@ public class ComparisonService {
 //        metadata.get(0).forEach(result::add1);
 //        metadata.get(1).forEach(result::add2);
 //
-        result.add("\"services\": [");
-        services.get(0).forEach(result::add1);
-        services.get(1).forEach(result::add2);
-        result.add("],");
-
-
-//        result.add("\"artifacts\": [");
-//        artifacts.get(0).forEach(result::add1);
-//        artifacts.get(1).forEach(result::add2);
+//        result.add("\"services\": [");
+//        services.get(0).forEach(result::add1);
+//        services.get(1).forEach(result::add2);
 //        result.add("],");
+
+
+        result.add("\"artifacts\": [");
+        artifacts.get(0).forEach(result::add1);
+        artifacts.get(1).forEach(result::add2);
+        result.add("],");
 
 //        result.add("\"script\": [");
 //        script.get(0).forEach(result::add1);
@@ -174,7 +174,7 @@ public class ComparisonService {
         //key-minSize, value-maxSize
         if(!listMaxSize.isEmpty()) {
             System.out.println(getWorstGrade(listMaxSize.get(0), collectionSizesInOrder));
-            Map<Integer, Integer> comparedObject = new HashMap<>(elementMatcher(gradesMin, getWorstGrade(listMaxSize.get(0))));
+            Map<Integer, Integer> comparedObject = new HashMap<>(elementMatcher(gradesMin, getWorstGrade(listMaxSize.get(0), collectionSizesInOrder)));
             Map<Integer, Integer> additionalFromListMinSize = new HashMap<>();
             Map<Integer, Integer> additionalFromListMaxSize = new HashMap<>();
             List<Integer> skipFromListMinSize = new ArrayList<>(comparedObject.keySet());

@@ -50,8 +50,8 @@ public class ArtifactObject2 implements ArtifactObject {
         StringBuilder fileString = new StringBuilder();
         file.forEach(s -> fileString.append(s).append("\n"));
         return "{\n" +
-                "\"service-short-name\" : \"" + targetRepository + "\",\n" +
-                "\"service_name\" : \"" + targetRepository + "\",\n" +
+                "\"service-short-name\" : \"" + serviceShortName + "\",\n" +
+                "\"service_name\" : \"" + serviceName + "\",\n" +
                 hashes +
                 "\n\"file\" : [\n" +
                 fileString +
