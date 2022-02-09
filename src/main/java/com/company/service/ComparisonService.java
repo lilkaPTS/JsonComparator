@@ -279,7 +279,7 @@ public class ComparisonService {
 
                 List<Integer> listJ = new ArrayList<>();
                 for (int j = 0; j < gradesMin.get(key).size(); j++) {
-                    if(gradesMin.get(key).get(j)==bestGrade) {
+                    if(gradesMin.get(key).get(j)==bestGrade && !result.containsValue(j)) {
                         listJ.add(j);
                     }
                 }
