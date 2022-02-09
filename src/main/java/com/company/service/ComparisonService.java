@@ -56,6 +56,49 @@ public class ComparisonService {
         return result;
     }
 
+    private void test() {
+        List<List<Integer>> list = new ArrayList<>();
+        List<Integer> list1 = new ArrayList<>();
+        List<Integer> list2 = new ArrayList<>();
+        List<Integer> list3 = new ArrayList<>();
+        List<Integer> list4 = new ArrayList<>();
+
+
+        list1.add(203);
+        list1.add(201);
+        list1.add(202);
+        list1.add(204);
+
+        list2.add(200);
+        list2.add(47);
+        list2.add(47);
+        list2.add(47);
+
+        list3.add(105);
+        list3.add(65);
+        list3.add(65);
+        list3.add(65);
+
+        list4.add(111);
+        list4.add(67);
+        list4.add(68);
+        list4.add(69);
+
+        list.add(list1);
+        list.add(list2);
+        list.add(list3);
+        list.add(list4);
+        System.out.println();
+        System.out.println();
+        System.out.println("-----------------------------------");
+        list.forEach(System.out::println);
+        System.out.println();
+        System.out.println(elementMatcher(list, 350));
+        System.out.println("-----------------------------------");
+        System.out.println();
+        System.out.println();
+    }
+
     private List<List<String>> getArtifacts(List<ArtifactObject> list1, List<ArtifactObject> list2) {
         List<List<String>> result = new ArrayList<>();
         List<ArtifactObject> artifactObject1List1 = new ArrayList<>();
@@ -292,7 +335,7 @@ public class ComparisonService {
                     for (int i = 0; i < listJ.size(); i++) {
                         List<Integer> list = new ArrayList<>();
                         for (int j = 0; j < gradesMin.size(); j++) {
-                            if(j==key) {
+                            if((j==key || result.containsKey(j))) {
                                 continue;
                             }
                             for (int k = 0; k < gradesMin.get(j).size(); k++) {
@@ -304,12 +347,32 @@ public class ComparisonService {
                         choiceList.add(list);
                     }
                     List<Integer> minElement = new ArrayList<>();
-                    for (int i = 0; i < choiceList.size(); i++) {
-                        minElement.add(Collections.min(choiceList.get(i)));
+                    while (!choiceList.get(0).isEmpty()){
+                        List<Integer> currentMinElement = new ArrayList<>();
+                        for (int i = 0; i < choiceList.size(); i++) {
+                            currentMinElement.add(Collections.min(choiceList.get(i)));
+                        }
+                        if(currentMinElement.size() == (int) currentMinElement.stream().filter(e-> e.equals(currentMinElement.get(0))).count()) {
+                            for (int i = 0; i < choiceList.size(); i++) {
+                                for (int j = 0; j < choiceList.get(i).size(); j++) {
+                                    choiceList.get(i).remove(currentMinElement.get(0));
+                                }
+                            }
+                            minElement = currentMinElement;
+                        } else {
+                            minElement = currentMinElement;
+                            break;
+                        }
                     }
-                    result.put(key, listJ.get(minElement.indexOf(Collections.max(minElement))));
-                    skipI.add(key);
-                    skipJ.add(listJ.get(minElement.indexOf(Collections.max(minElement))));
+                    if(minElement.isEmpty()) {
+                        result.put(key, value);
+                        skipI.add(key);
+                        skipJ.add(value);
+                    } else {
+                        result.put(key, listJ.get(minElement.indexOf(Collections.max(minElement))));
+                        skipI.add(key);
+                        skipJ.add(listJ.get(minElement.indexOf(Collections.max(minElement))));
+                    }
                 }
                 bestGrade = gradesWorst;
             } else {
