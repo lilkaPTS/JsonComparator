@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ComparisonService {
@@ -19,37 +20,37 @@ public class ComparisonService {
 
     public ResponseView execute(ConfigFile config1, ConfigFile config2) {
         ResponseView result = new ResponseView();
-        List<List<String>> metadata = getMetadata(config1, config2);
+//        List<List<String>> metadata = getMetadata(config1, config2);
         List<List<String>> services = getArray(config1.getServices(), config2.getServices());
-        List<List<String>> artifacts = getArtifacts(config1.getArtifacts(), config2.getArtifacts());
-        List<List<String>> script = getArray(config1.getScript(), config2.getScript());
-        List<List<String>> rpm = getArray(config1.getRpm(), config2.getRpm());
+//        List<List<String>> artifacts = getArtifacts(config1.getArtifacts(), config2.getArtifacts());
+//        List<List<String>> script = getArray(config1.getScript(), config2.getScript());
+//        List<List<String>> rpm = getArray(config1.getRpm(), config2.getRpm());
 
         result.add("{");
 
-        metadata.get(0).forEach(result::add1);
-        metadata.get(1).forEach(result::add2);
-
+//        metadata.get(0).forEach(result::add1);
+//        metadata.get(1).forEach(result::add2);
+//
         result.add("\"services\": [");
         services.get(0).forEach(result::add1);
         services.get(1).forEach(result::add2);
         result.add("],");
 
 
-        result.add("\"artifacts\": [");
-        artifacts.get(0).forEach(result::add1);
-        artifacts.get(1).forEach(result::add2);
-        result.add("],");
+//        result.add("\"artifacts\": [");
+//        artifacts.get(0).forEach(result::add1);
+//        artifacts.get(1).forEach(result::add2);
+//        result.add("],");
 
-        result.add("\"script\": [");
-        script.get(0).forEach(result::add1);
-        script.get(1).forEach(result::add2);
-        result.add("],");
-
-        result.add("\"rpm\": [");
-        rpm.get(0).forEach(result::add1);
-        rpm.get(1).forEach(result::add2);
-        result.add("],");
+//        result.add("\"script\": [");
+//        script.get(0).forEach(result::add1);
+//        script.get(1).forEach(result::add2);
+//        result.add("],");
+//
+//        result.add("\"rpm\": [");
+//        rpm.get(0).forEach(result::add1);
+//        rpm.get(1).forEach(result::add2);
+//        result.add("],");
 
         result.add("}");
         return result;
@@ -121,14 +122,17 @@ public class ComparisonService {
         List<T> listMaxSize = listMinSize.equals(objectList1) ? objectList2 : objectList1;
         List<List<Integer>> gradesMin = getGrades(listMinSize, listMaxSize, collectionSizesInOrder);
         List<List<Integer>> gradesMax = getGrades(listMaxSize, listMinSize, collectionSizesInOrder);
+        System.out.println();
         gradesMin.forEach(System.out::println);
+        System.out.println();
         gradesMax.forEach(System.out::println);
         List<String> result1 = new ArrayList<>(); // MinSize
         List<String> result2 = new ArrayList<>(); // MaxSize
         //key-minSize, value-maxSize
         if(!listMaxSize.isEmpty()) {
             System.out.println(getWorstGrade(listMaxSize.get(0), collectionSizesInOrder));
-            Map<Integer, Integer> comparedObject = new HashMap<>(elementMatcher(gradesMin, gradesMax, getWorstGrade(listMaxSize.get(0), collectionSizesInOrder)));
+            //Map<Integer, Integer> comparedObject = new HashMap<>(elementMatcher(gradesMin, gradesMax, getWorstGrade(listMaxSize.get(0), collectionSizesInOrder)));
+            Map<Integer, Integer> comparedObject = new HashMap<>(test(gradesMin, getWorstGrade(listMaxSize.get(0))));
             Map<Integer, Integer> additionalFromListMinSize = new HashMap<>();
             Map<Integer, Integer> additionalFromListMaxSize = new HashMap<>();
             List<Integer> skipFromListMinSize = new ArrayList<>(comparedObject.keySet());
@@ -249,6 +253,117 @@ public class ComparisonService {
         }
     }
 
+    private Map<Integer, Integer> mat(List<List<Integer>> gradesMin, List<List<Integer>> gradesMax, int gradesWorst) {
+        Map<Integer, Integer> result =  new HashMap<>();
+        for (int i = 0; i < gradesMin.size(); i++) {
+            List<Integer> immutableList = new ArrayList<>(gradesMin.get(i));
+            List<Integer> currentGrades = new ArrayList<>(gradesMin.get(i));
+            for (int j = 0; j < immutableList.size(); j++) {
+                int bestGrade = Collections.min(currentGrades);
+                if(bestGrade >= gradesWorst) {
+                    break;
+                }
+                int checkedIndexInGradesMax = immutableList.indexOf(bestGrade);
+                int supposedMinGrade = Collections.min(gradesMax.get(checkedIndexInGradesMax));
+                if(supposedMinGrade == bestGrade) {
+                    //////////////////
+                } else {
+                    int indexMinGrade = gradesMax.get(checkedIndexInGradesMax).indexOf(supposedMinGrade);
+                    int realMinGrade = Collections.min(gradesMin.get(indexMinGrade));
+                    if(supposedMinGrade != realMinGrade) {
+                        int realMinGradeIndex = gradesMin.get(indexMinGrade).indexOf(realMinGrade);
+                        if(!result.containsValue(realMinGradeIndex)) {
+                            //////////
+                        }
+                    } else {
+                        List<Integer> checkedIndexes = gradesMin.get(indexMinGrade).stream().filter(e -> e==realMinGrade).collect(Collectors.toList());
+                        if(checkedIndexes.size() > 1) {
+                            if(!result.values().containsAll(checkedIndexes)) {
+
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private Map<Integer, Integer> test(List<List<Integer>> gradesMin, int gradesWorst) {
+        Map<Integer, Integer> result =  new HashMap<>();
+        List<Integer> skipI = new ArrayList<>();
+        List<Integer> skipJ = new ArrayList<>();
+        int bestGrade = gradesWorst;
+        Map.Entry<Integer, Integer> bestGradeCoordinate = new AbstractMap.SimpleEntry<>(0,0);
+        for (int counter = 0; counter < gradesMin.size(); counter++) {
+            for (int i = 0; i < gradesMin.size(); i++) {
+                if(skipI.contains(i)){
+                    continue;
+                }
+                for (int j = 0; j < gradesMin.get(i).size(); j++) {
+                    if(skipJ.contains(j)) {
+                        continue;
+                    }
+                    if (bestGrade > gradesMin.get(i).get(j)) {
+                        bestGrade = gradesMin.get(i).get(j);
+                        bestGradeCoordinate = new AbstractMap.SimpleEntry<>(i, j);
+                    }
+                }
+            }
+            if(bestGrade < gradesWorst) {
+                int key = bestGradeCoordinate.getKey();
+                int value = bestGradeCoordinate.getValue();
+
+                List<Integer> listJ = new ArrayList<>();
+                for (int j = 0; j < gradesMin.get(key).size(); j++) {
+                    if(gradesMin.get(key).get(j)==bestGrade) {
+                        listJ.add(j);
+                    }
+                }
+                if(listJ.size() == 1) {
+                    result.put(key, value);
+                    skipI.add(key);
+                    skipJ.add(value);
+                } else {
+                    List<List<Integer>> choiceList = new ArrayList<>();
+                    for (int i = 0; i < listJ.size(); i++) {
+                        List<Integer> list = new ArrayList<>();
+                        for (int j = 0; j < gradesMin.size(); j++) {
+                            if(j==key) {
+                                continue;
+                            }
+                            for (int k = 0; k < gradesMin.get(j).size(); k++) {
+                                if(k == listJ.get(i)) {
+                                    list.add(gradesMin.get(j).get(k));
+                                }
+                            }
+                        }
+                        choiceList.add(list);
+                    }
+                    List<Integer> minElement = new ArrayList<>();
+                    for (int i = 0; i < choiceList.size(); i++) {
+                        minElement.add(Collections.min(choiceList.get(i)));
+                    }
+                    result.put(key, minElement.indexOf(Collections.min(minElement)));
+                    skipI.add(key);
+                    skipJ.add(minElement.indexOf(Collections.min(minElement)));
+                }
+                bestGrade = gradesWorst;
+            } else {
+                break;
+            }
+        }
+        return result;
+    }
+
+    private boolean isAlternatives(List<Integer> list, int supposedMinGrade) {
+        int count = (int) list.stream().filter(element -> element == supposedMinGrade).count();
+        int realMinGrade = Collections.min(list);
+        return supposedMinGrade != realMinGrade || count > 1;
+    }
+
     private Map<Integer, Integer> elementMatcher(List<List<Integer>> gradesMin, List<List<Integer>> gradesMax, int gradesWorst) {
         Map<Integer, Integer> result =  new HashMap<>();
         for (int i = 0; i < gradesMin.size(); i++) {
@@ -270,6 +385,8 @@ public class ComparisonService {
                         result.put(i, indexesOfBestGrade.get(0));
                         break;
                     }
+                } else {
+
                 }
                 currentGrades.remove(new Integer(bestGrade));
             }
