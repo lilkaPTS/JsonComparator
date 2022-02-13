@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Data
@@ -37,12 +36,12 @@ public class ArtifactObject2 implements ArtifactObject {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ArtifactObject2 that = (ArtifactObject2) o;
-        return hashes.equals(that.hashes) && file.equals(that.file) && targetRepository.equals(that.targetRepository);
+        return hashes.equals(that.hashes) && targetRepository.equals(that.targetRepository);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(hashes, file, targetRepository);
+        return Objects.hash(hashes, targetRepository);
     }
 
     @Override
@@ -76,7 +75,7 @@ public class ArtifactObject2 implements ArtifactObject {
             }
             result+=this.hashes.compareTo(((ArtifactObject2) o).hashes);
             for (String str: this.file) {
-                result-=((ArtifactObject2) o).file.contains(str) ? 50 : 0;
+                result-=((ArtifactObject2) o).file.contains(str) ? 1 : 0;
             }
             result+=this.targetRepository.equals(((ArtifactObject2) o).targetRepository) ? 0 : 50;
         }

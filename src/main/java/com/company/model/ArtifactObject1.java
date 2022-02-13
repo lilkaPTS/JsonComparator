@@ -50,7 +50,9 @@ public class ArtifactObject1 implements ArtifactObject {
     public int compareTo(ArtifactObject o) {
         int result = 0;
         if(o instanceof ArtifactObject1) {
-            result+=this.mvn.equals(((ArtifactObject1) o).mvn) ? 0 : 50;
+            for (Mvn m: this.mvn) {
+                result-=((ArtifactObject1) o).mvn.contains(m) ? 1 : 0;
+            }
             result+=this.targetRepository.equals(((ArtifactObject1) o).targetRepository) ? 0 : 50;
         }
         return result;
