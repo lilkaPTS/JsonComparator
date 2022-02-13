@@ -2,12 +2,12 @@ package com.company.service;
 
 import com.company.model.*;
 import com.company.pojo.Hashes;
+import com.company.pojo.Mvn;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class ComparisonService {
@@ -56,49 +56,6 @@ public class ComparisonService {
         return result;
     }
 
-    private void test() {
-        List<List<Integer>> list = new ArrayList<>();
-        List<Integer> list1 = new ArrayList<>();
-        List<Integer> list2 = new ArrayList<>();
-        List<Integer> list3 = new ArrayList<>();
-        List<Integer> list4 = new ArrayList<>();
-
-
-        list1.add(203);
-        list1.add(201);
-        list1.add(202);
-        list1.add(204);
-
-        list2.add(200);
-        list2.add(47);
-        list2.add(47);
-        list2.add(47);
-
-        list3.add(105);
-        list3.add(65);
-        list3.add(65);
-        list3.add(65);
-
-        list4.add(111);
-        list4.add(67);
-        list4.add(68);
-        list4.add(69);
-
-        list.add(list1);
-        list.add(list2);
-        list.add(list3);
-        list.add(list4);
-        System.out.println();
-        System.out.println();
-        System.out.println("-----------------------------------");
-        list.forEach(System.out::println);
-        System.out.println();
-        System.out.println(elementMatcher(list, 350));
-        System.out.println("-----------------------------------");
-        System.out.println();
-        System.out.println();
-    }
-
     private List<List<String>> getArtifacts(List<ArtifactObject> list1, List<ArtifactObject> list2) {
         List<List<String>> result = new ArrayList<>();
         List<ArtifactObject> artifactObject1List1 = new ArrayList<>();
@@ -125,8 +82,6 @@ public class ComparisonService {
                 artifactObject2List2.add(element);
             }
         }
-        System.out.println(mvnMaxSize);
-        System.out.println(fileMaxSize);
         for (ArtifactObject element : artifactObject2List1) {
             for (int i = 0; i < fileMaxSize - ((ArtifactObject2)element).getFile().size(); i++) {
                 ((ArtifactObject2)element).addFile(" ");
@@ -139,13 +94,30 @@ public class ComparisonService {
         }
         List<List<String>> artifactObject1Result = getArray(artifactObject1List1, artifactObject1List2, mvnMaxSize, fileMaxSize);
         List<List<String>> artifactObject2Result = getArray(artifactObject2List1, artifactObject2List2, mvnMaxSize, fileMaxSize);
-        List<String> result1 = artifactObject2Result.get(0);
-        List<String> result2 = artifactObject2Result.get(1);
-        result1.addAll(artifactObject1Result.get(0));
-        result2.addAll(artifactObject1Result.get(1));
+        List<String> result1 = new ArrayList<>(artifactObject1Result.get(0));
+        List<String> result2 = new ArrayList<>(artifactObject1Result.get(1));
+        if(!result1.isEmpty()) {
+            result1.set(searchLastNeedElementIgnoreColor(result1, "}"), "},");
+        }
+        if(!result2.isEmpty()) {
+            result2.set(searchLastNeedElementIgnoreColor(result2, "}"), "},");
+        }
+        result1.addAll(artifactObject2Result.get(0));
+        result2.addAll(artifactObject2Result.get(1));
+
         result.add(result1);
         result.add(result2);
         return result;
+    }
+
+    private int searchLastNeedElementIgnoreColor(List<String> list, String searchString) {
+        List<Integer> indexes = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            if(list.get(i).matches("^" + searchString + ".*$")) {
+                indexes.add(i);
+            }
+        }
+        return Collections.max(indexes);
     }
 
     private List<List<String>> getMetadata(ConfigFile config1, ConfigFile config2) {
@@ -164,16 +136,11 @@ public class ComparisonService {
         List<T> listMinSize = objectList1.size() <= objectList2.size() ? objectList1 : objectList2;
         List<T> listMaxSize = listMinSize.equals(objectList1) ? objectList2 : objectList1;
         List<List<Integer>> gradesMin = getGrades(listMinSize, listMaxSize, collectionSizesInOrder);
-        List<List<Integer>> gradesMax = getGrades(listMaxSize, listMinSize, collectionSizesInOrder);
-        System.out.println();
-        gradesMin.forEach(System.out::println);
-        System.out.println();
-        gradesMax.forEach(System.out::println);
         List<String> result1 = new ArrayList<>(); // MinSize
         List<String> result2 = new ArrayList<>(); // MaxSize
         //key-minSize, value-maxSize
         if(!listMaxSize.isEmpty()) {
-            System.out.println(getWorstGrade(listMaxSize.get(0), collectionSizesInOrder));
+            //min to max
             Map<Integer, Integer> comparedObject = new HashMap<>(elementMatcher(gradesMin, getWorstGrade(listMaxSize.get(0), collectionSizesInOrder)));
             Map<Integer, Integer> additionalFromListMinSize = new HashMap<>();
             Map<Integer, Integer> additionalFromListMaxSize = new HashMap<>();
@@ -189,41 +156,70 @@ public class ComparisonService {
                     additionalFromListMaxSize.put(i, -1);
                 }
             }
-            System.out.println("comparedObject");
-            System.out.println(comparedObject);
-            System.out.println("additionalFromListMinSize");
-            System.out.println(additionalFromListMinSize);
-            System.out.println("additionalFromListMaxSize");
-            System.out.println(additionalFromListMaxSize);
-
+            Map<Integer, Integer> comparedObjectRL = new HashMap<>();
+            Map<Integer, Integer> additionalFromLeftList;
+            Map<Integer, Integer> additionalFromRightList;
+            if(objectList1.size() > objectList2.size()) {
+                for(Integer key: comparedObject.keySet()) {
+                    comparedObjectRL.put(comparedObject.get(key), key);
+                }
+                additionalFromLeftList = additionalFromListMaxSize;
+                additionalFromRightList = additionalFromListMinSize;
+            } else {
+                comparedObjectRL = comparedObject;
+                additionalFromLeftList = additionalFromListMinSize;
+                additionalFromRightList = additionalFromListMaxSize;
+            }
+            System.out.println("GradesMin:");
+            gradesMin.forEach(System.out::println);
+            System.out.println("comparedObjectRL");
+            System.out.println(comparedObjectRL);
+            System.out.println("additionalFromLeftList");
+            System.out.println(additionalFromLeftList);
+            System.out.println("additionalFromRightList");
+            System.out.println(additionalFromRightList);
             if(!listMinSize.isEmpty()){
-                comparedObject.keySet().forEach(key -> {
-                    T currentObject1 = listMinSize.get(key);
-                    T currentObject2 = listMaxSize.get(comparedObject.get(key));
-                    result1.addAll(setColorEveryWhere(Arrays.asList(currentObject1.toString().split("\n")), DEFAULT));
-                    result2.addAll(fieldEnumerator(currentObject1, currentObject2));
-                });
+                for(Integer key: comparedObjectRL.keySet()) {
+                    T currentObject1 = objectList1.get(key);
+                    T currentObject2 = objectList2.get(comparedObjectRL.get(key));
+                    if(currentObject1 instanceof ArtifactObject1) {
+                        List<List<String>> interimResult = getArray(((ArtifactObject1) currentObject1).getMvn(), ((ArtifactObject1) currentObject2).getMvn());
+                        addToLists(result1, result2, "{");
+                        addToLists(result1, result2, "\"mvn\" : [");
+                        result1.addAll(interimResult.get(0));
+                        result2.addAll(interimResult.get(1));
+                        addToLists(result1, result2, "],");
+                        addToLists(result1, result2, "\"target_repository\" : \"" + ((ArtifactObject1) currentObject1).getTargetRepository() + "\"");
+                        addToLists(result1, result2, "},");
+                    } else {
+                        List<List<String>> interimResult = fieldEnumerator(currentObject1, currentObject2);
+                        result1.addAll(interimResult.get(0));
+                        result2.addAll(interimResult.get(1));
+                   }
+                }
             }
-            result1.addAll(getAdditionalForPrint(additionalFromListMinSize.keySet(), listMinSize).get(0));
-            result2.addAll(getAdditionalForPrint(additionalFromListMinSize.keySet(), listMinSize).get(1));
-            result1.addAll(getAdditionalForPrint(additionalFromListMaxSize.keySet(), listMaxSize).get(1));
-            result2.addAll(getAdditionalForPrint(additionalFromListMaxSize.keySet(), listMaxSize).get(0));
-            int index;
-            if (!listMinSize.isEmpty()) {
-                index = searchLastNeedElementIgnoreColor(result1, "},");
-                result1.set(index, result1.get(index).replaceAll("},", "}"));
-            }
+            result1.addAll(getAdditionalForPrint(additionalFromLeftList.keySet(), objectList1).get(0));
+            result2.addAll(getAdditionalForPrint(additionalFromLeftList.keySet(), objectList1).get(1));
+            result1.addAll(getAdditionalForPrint(additionalFromRightList.keySet(), objectList2).get(1));
+            result2.addAll(getAdditionalForPrint(additionalFromRightList.keySet(), objectList2).get(0));
+        }
+        int index;
+        if (!objectList1.isEmpty()) {
+            index = searchLastNeedElementIgnoreColor(result1, "},");
+            result1.set(index, result1.get(index).replaceAll("},", "}"));
+        }
+        if(!objectList2.isEmpty()) {
             index = searchLastNeedElementIgnoreColor(result2, "},");
             result2.set(index, result2.get(index).replaceAll("},", "}"));
         }
-        if(objectList1.equals(listMinSize)) {
-            result.add(result1);
-            result.add(result2);
-        } else {
-            result.add(result2);
-            result.add(result1);
-        }
+        result.add(result1);
+        result.add(result2);
         return result;
+    }
+
+    private <T> void addToLists(List<T> list1, List<T> list2, T obj) {
+        list1.add(obj);
+        list2.add(obj);
     }
 
     private <T> int getWorstGrade(T obj, int ... collectionSizesInOrder) {
@@ -236,9 +232,9 @@ public class ComparisonService {
                     result+=getWorstGrade(field.get(obj));
                 } else if(field.get(obj) instanceof List) {
                     if(obj instanceof ArtifactObject1) {
-                        result+=collectionSizesInOrder[0]*50;
+                      //  result+=collectionSizesInOrder[0]*50;
                     } else if(obj instanceof ArtifactObject2) {
-                        result+=collectionSizesInOrder[1]*50;
+                       // result+=collectionSizesInOrder[1]*50;
                     }
                 } else {
                     result+=jsonProperty.required() ? 50:0;
@@ -250,8 +246,34 @@ public class ComparisonService {
         return result;
     }
 
-    private <T> List<String> fieldEnumerator(T obj1, T obj2) {
-        List<String> result = new ArrayList<>(setColorEveryWhere(Arrays.asList(obj2.toString().split("\n")), DEFAULT));
+    private void colorArray(List<String> list, String element, String color) {
+        int startIndex = -1;
+        int endIndex = -1;
+        for (int i = 0; i < list.size(); i++) {
+            if(list.get(i).matches("^\""+element+"\" : \\[.*")) {
+                startIndex = i;
+                break;
+            }
+        }
+        if(startIndex==-1) {
+            return;
+        }
+        for (int i = startIndex; i < list.size(); i++) {
+            if(list.get(i).matches("^],.*")) {
+                endIndex = i;
+            }
+        }
+        if(endIndex!=-1) {
+            for (int i = startIndex; i <= endIndex; i++) {
+                list.set(i, list.get(i).split(KEY_EXPRESSION)[0]+KEY_EXPRESSION+color);
+            }
+        }
+    }
+
+    private <T> List<List<String>> fieldEnumerator(T obj1, T obj2) {
+        List<List<String>> result = new ArrayList<>();
+        result.add(setColorEveryWhere(Arrays.asList(obj1.toString().split("\n")), DEFAULT));
+        result.add(setColorEveryWhere(Arrays.asList(obj2.toString().split("\n")), DEFAULT));
         for (Field field: obj2.getClass().getDeclaredFields()) {
             JsonProperty jsonProperty = field.getDeclaredAnnotation(JsonProperty.class);
             if("hashes".equals(field.getName())) {
@@ -260,20 +282,25 @@ public class ComparisonService {
                     if(field.get(obj2) instanceof Hashes) {
                         for (Field field1: Hashes.class.getDeclaredFields()) {
                             JsonProperty jsonProperty1 = field1.getDeclaredAnnotation(JsonProperty.class);
-                            equalsAndSetColor(field.get(obj1), field.get(obj2), field1.getName(), result, jsonProperty1.value(), ERROR);
+                            equalsAndSetColor(field.get(obj1), field.get(obj2), field1.getName(), result.get(1), jsonProperty1.value(), ERROR);
                         }
                     }
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
-            }
-//            else if("file".equals(field.getName())) {
-//
-//            }
-            else if(jsonProperty.required()) {
-                equalsAndSetColor(obj1, obj2, field.getName(), result, jsonProperty.value(), ERROR);
+            } else if("file".equals(field.getName())) {
+                try {
+                    field.setAccessible(true);
+                    if(!field.get(obj1).equals(field.get(obj2))) {
+                        colorArray(result.get(1), "file", WARNING);
+                    }
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            } else if(jsonProperty.required()) {
+                equalsAndSetColor(obj1, obj2, field.getName(), result.get(1), jsonProperty.value(), ERROR);
             } else {
-                equalsAndSetColor(obj1, obj2, field.getName(), result, jsonProperty.value(), WARNING);
+                equalsAndSetColor(obj1, obj2, field.getName(), result.get(1), jsonProperty.value(), WARNING);
             }
         }
         return result;
@@ -397,25 +424,15 @@ public class ComparisonService {
         return result;
     }
 
-    private int searchLastNeedElementIgnoreColor(List<String> list, String searchString) {
-        List<Integer> indexes = new ArrayList<>();
-        for (int i = 0; i < list.size(); i++) {
-            if(list.get(i).matches("^" + searchString + ".*$")) {
-                indexes.add(i);
-            }
-        }
-        return Collections.max(indexes);
-    }
-
     private <T extends Comparable<T>> List<List<Integer>> getGrades(List<T> list1, List<T> list2, int ... collectionSizesInOrder) {
         List<List<Integer>> result = new ArrayList<>();
         for (T obj1 : list1) {
             List<Integer> currentGrades = new ArrayList<>();
             for (T obj2 : list2) {
                 if(obj2 instanceof ArtifactObject1) {
-                    currentGrades.add(obj1.compareTo(obj2)+collectionSizesInOrder[0]*50);
+                    currentGrades.add(obj1.compareTo(obj2)+collectionSizesInOrder[0]);
                 } else if(obj2 instanceof ArtifactObject2) {
-                    currentGrades.add(obj1.compareTo(obj2)+collectionSizesInOrder[1]*50);
+                    currentGrades.add(obj1.compareTo(obj2)+collectionSizesInOrder[1]);
                 }
                 else {
                     currentGrades.add(obj1.compareTo(obj2));
