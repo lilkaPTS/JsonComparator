@@ -69,43 +69,16 @@
       "properties": {
         "common": {
           "type": "object",
-          "properties": {
-            "some-else-param": {
-              "type": "string"
-            },
-            "some-other-param": {
-              "type": "string"
-            },
-            "some-param": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "some-param"
-          ],
-          "additionalProperties": false
+          "additionalProperties": { "type": "string" }
         },
         "services": {
           "type": "object",
-          "properties": {
-            "service_name": {
-              "$ref": "#/$defs/Map(String,String)"
-            },
-            "service_name_1": {
-              "$ref": "#/$defs/Map(String,String)"
-            },
-            "service_name_2": {
-              "$ref": "#/$defs/Map(String,String)"
-            }
-          },
-          "required": [
-            "service_name",
-            "service_name_1",
-            "service_name_2"
-          ],
-          "additionalProperties": false
+          "additionalProperties": {"type": "object", "additionalProperties": { "type": "string" } }
         }
       },
+      "required": [
+        "common"
+      ],
       "additionalProperties": false
     },
     "rpm": {
