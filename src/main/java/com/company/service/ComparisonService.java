@@ -2,8 +2,8 @@ package com.company.service;
 
 import com.company.model.*;
 import com.company.pojo.Hashes;
-import com.company.pojo.Mvn;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -11,6 +11,9 @@ import java.util.*;
 
 @Service
 public class ComparisonService {
+
+    @Autowired
+    private JsonService jsonService;
 
     private static final String KEY_EXPRESSION = "---color:";
     private static final String DEFAULT = "NoN";
@@ -22,9 +25,11 @@ public class ComparisonService {
         ResponseView result = new ResponseView();
 //        List<List<String>> metadata = getMetadata(config1, config2);
 //        List<List<String>> services = getArray(config1.getServices(), config2.getServices());
-        List<List<String>> artifacts = getArtifacts(config1.getArtifacts(), config2.getArtifacts());
+//        List<List<String>> artifacts = getArtifacts(config1.getArtifacts(), config2.getArtifacts());
 //        List<List<String>> script = getArray(config1.getScript(), config2.getScript());
 //        List<List<String>> rpm = getArray(config1.getRpm(), config2.getRpm());
+        List<List<String>> parameters = getParameter(config1, config2);
+
 
         result.add("{");
 
@@ -37,10 +42,10 @@ public class ComparisonService {
 //        result.add("],");
 
 
-        result.add("\"artifacts\": [");
-        artifacts.get(0).forEach(result::add1);
-        artifacts.get(1).forEach(result::add2);
-        result.add("],");
+//        result.add("\"artifacts\": [");
+//        artifacts.get(0).forEach(result::add1);
+//        artifacts.get(1).forEach(result::add2);
+//        result.add("],");
 
 //        result.add("\"script\": [");
 //        script.get(0).forEach(result::add1);
@@ -52,6 +57,10 @@ public class ComparisonService {
 //        rpm.get(1).forEach(result::add2);
 //        result.add("],");
 
+        result.add("\"parameters\": {");
+        parameters.get(0).forEach(result::add1);
+        parameters.get(1).forEach(result::add2);
+        result.add("}");
         result.add("}");
         return result;
     }
@@ -131,6 +140,119 @@ public class ComparisonService {
         return result;
     }
 
+    private List<List<String>> getParameter(ConfigFile config1, ConfigFile config2) {
+        List<List<String>> result = new ArrayList<>();
+        List<List<String>> common = mapPrinter(getMapDependencies(config1.getParameters().getCommon(), config2.getParameters().getCommon()), "common");
+        List<String> parameters1 = common.get(0);
+        List<String> parameters2 = common.get(1);
+        addToLists(parameters1, parameters2, "\""+"services"+"\" : {"+KEY_EXPRESSION+DEFAULT);
+        List<List<String>> services = new ArrayList<>();
+        Dependencies<String,Map<String, String>> dependencies = getMapDependencies(config1.getParameters().getServices(), config2.getParameters().getServices());
+        List<String> compared = dependencies.getCompared();
+        List<String> additional1 = dependencies.getAdditional1();
+        List<String> additional2 = dependencies.getAdditional2();
+        for(String key:compared) {
+            List<List<String>> interimResult = mapPrinter(getMapDependencies(dependencies.getMap1().get(key), dependencies.getMap2().get(key)), key);
+            parameters1.addAll(interimResult.get(0));
+            parameters2.addAll(interimResult.get(1));
+        }
+        for(String key:additional1) {
+            List<List<String>> interimResult = additionalMapPrinter(dependencies.getMap1().get(key), key);
+            parameters1.addAll(interimResult.get(0));
+            parameters2.addAll(interimResult.get(1));
+        }
+        for(String key:additional2) {
+            List<List<String>> interimResult = additionalMapPrinter(dependencies.getMap2().get(key), key);
+            parameters1.addAll(interimResult.get(0));
+            parameters2.addAll(interimResult.get(1));
+        }
+        addToLists(parameters1, parameters2, "}"+KEY_EXPRESSION+DEFAULT);
+        result.add(parameters1);
+        result.add(parameters2);
+
+        return result;
+    }
+
+    private <K,V> Dependencies<K,V> getMapDependencies(Map<K, V> map1, Map<K, V> map2) {
+        Dependencies<K,V> result = new Dependencies<>();
+        List<K> compared = new ArrayList<>();
+        List<K> additional1 = new ArrayList<>();
+        List<K> additional2 = new ArrayList<>();
+        List<K> keys1 = new ArrayList<>(map1.keySet());
+        List<K> keys2 = new ArrayList<>(map2.keySet());
+        if(!keys1.isEmpty()) {
+            if(!keys2.isEmpty()) {
+                for (K key : keys1) {
+                    if (keys2.contains(key)) {
+                        compared.add(key);
+                    }
+                }
+            }
+        }
+        keys1.forEach(key -> {
+            if(!compared.contains(key)) {
+                additional1.add(key);
+            }
+        });
+        keys2.forEach(key -> {
+            if(!compared.contains(key)) {
+                additional2.add(key);
+            }
+        });
+        result.setCompared(compared);
+        result.setAdditional1(additional1);
+        result.setAdditional2(additional2);
+        result.setMap1(map1);
+        result.setMap2(map2);
+        return result;
+    }
+
+    private <K,V> List<List<String>> additionalMapPrinter(Map<K, V> map1, String mapNameJson) {
+        List<List<String>> result = new ArrayList<>();
+        List<String> result1 = new ArrayList<>();
+        List<String> result2 = new ArrayList<>();
+        result1.add("\""+mapNameJson+"\" : {"+KEY_EXPRESSION+NOTIFICATION);
+        result2.add(" "+KEY_EXPRESSION+DEFAULT);
+        for (K key: map1.keySet()) {
+            result1.add("\"" + key + "\" : \"" + map1.get(key) + "\","+KEY_EXPRESSION+NOTIFICATION);
+            result2.add(" "+KEY_EXPRESSION+DEFAULT);
+        }
+        result1.add("}"+KEY_EXPRESSION+NOTIFICATION);
+        result2.add(" "+KEY_EXPRESSION+DEFAULT);
+        result.add(result1);
+        result.add(result2);
+        return result;
+    }
+
+    private <K, V> List<List<String>> mapPrinter(Dependencies<K,V> dependencies, String mapNameJson) {
+        List<List<String>> result = new ArrayList<>();
+        List<String> result1 = new ArrayList<>();
+        List<String> result2 = new ArrayList<>();
+        Map<K,V> map1 = dependencies.getMap1();
+        Map<K,V> map2 = dependencies.getMap2();
+        addToLists(result1, result2, "\""+mapNameJson+"\" : {"+KEY_EXPRESSION+DEFAULT);
+        for (K key: dependencies.getCompared()) {
+            if(map1.get(key).equals(map2.get(key))) {
+                addToLists(result1, result2, "\"" + key + "\" : \"" + map1.get(key) + "\","+KEY_EXPRESSION+DEFAULT);
+            } else {
+                result1.add("\"" + key + "\" : \"" + map1.get(key) + "\","+KEY_EXPRESSION+DEFAULT);
+                result2.add("\"" + key + "\" : \"" + map2.get(key) + "\","+KEY_EXPRESSION+WARNING);
+            }
+        }
+        for (K key: dependencies.getAdditional1()) {
+            result1.add("\"" + key + "\" : \"" + map1.get(key) + "\","+KEY_EXPRESSION+NOTIFICATION);
+            result2.add(" "+KEY_EXPRESSION+DEFAULT);
+        }
+        for (K key: dependencies.getAdditional2()) {
+            result1.add(" "+KEY_EXPRESSION+DEFAULT);
+            result2.add("\"" + key + "\" : \"" + map2.get(key) + "\","+KEY_EXPRESSION+NOTIFICATION);
+        }
+        addToLists(result1, result2, "}"+KEY_EXPRESSION+DEFAULT);
+        result.add(result1);
+        result.add(result2);
+        return result;
+    }
+
     private <T extends Comparable<T>> List<List<String>> getArray(List<T> objectList1, List<T> objectList2, int ... collectionSizesInOrder) {
         List<List<String>> result = new ArrayList<>();
         List<T> listMinSize = objectList1.size() <= objectList2.size() ? objectList1 : objectList2;
@@ -170,14 +292,6 @@ public class ComparisonService {
                 additionalFromLeftList = additionalFromListMinSize;
                 additionalFromRightList = additionalFromListMaxSize;
             }
-            System.out.println("GradesMin:");
-            gradesMin.forEach(System.out::println);
-            System.out.println("comparedObjectRL");
-            System.out.println(comparedObjectRL);
-            System.out.println("additionalFromLeftList");
-            System.out.println(additionalFromLeftList);
-            System.out.println("additionalFromRightList");
-            System.out.println(additionalFromRightList);
             if(!listMinSize.isEmpty()){
                 for(Integer key: comparedObjectRL.keySet()) {
                     T currentObject1 = objectList1.get(key);
@@ -215,6 +329,24 @@ public class ComparisonService {
         result.add(result1);
         result.add(result2);
         return result;
+    }
+
+    private <T> List<List<String>> getLists(T obj1, T obj2) {
+        List<List<String>> result = new ArrayList<>();
+        result.add(setColorEveryWhere(Arrays.asList(jsonService.getJsonPrettyString(obj1).replace("\r", "").split("\n")), DEFAULT));
+        result.add(setColorEveryWhere(Arrays.asList(jsonService.getJsonPrettyString(obj2).replace("\r", "").split("\n")), DEFAULT));
+        return result;
+    }
+
+    private <T> void comparisonObject(T obj1, T obj2, List<String> list) {
+        for(Field field: obj2.getClass().getDeclaredFields()) {
+            JsonProperty jsonProperty = field.getDeclaredAnnotation(JsonProperty.class);
+            if(jsonProperty.required()) {
+                equalsAndSetColor(obj1, obj2, field.getName(), list, jsonProperty.value(), ERROR);
+            } else {
+                equalsAndSetColor(obj1, obj2, field.getName(), list, jsonProperty.value(), WARNING);
+            }
+        }
     }
 
     private <T> void addToLists(List<T> list1, List<T> list2, T obj) {
@@ -445,7 +577,7 @@ public class ComparisonService {
 
     private void setColor(List<String> list, String element, String color) {
         for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).matches("^\"" + element + "\" : .+$")) {
+            if (list.get(i).matches("^\\s*\"" + element + "\" : .+$")) {
                 list.set(i, list.get(i).replaceAll(KEY_EXPRESSION + DEFAULT, KEY_EXPRESSION + color));
             }
         }
