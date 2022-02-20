@@ -200,8 +200,14 @@ public class ComparisonService {
         List<K> compared = new ArrayList<>();
         List<K> additional1 = new ArrayList<>();
         List<K> additional2 = new ArrayList<>();
-        List<K> keys1 = new ArrayList<>(map1.keySet());
-        List<K> keys2 = new ArrayList<>(map2.keySet());
+        List<K> keys1 = new ArrayList<>();
+        List<K> keys2 = new ArrayList<>();
+        if(map1 != null) {
+            keys1.addAll(map1.keySet());
+        }
+        if(map2 != null) {
+            keys2.addAll(map2.keySet());
+        }
         if(!keys1.isEmpty()) {
             if(!keys2.isEmpty()) {
                 for (K key : keys1) {
