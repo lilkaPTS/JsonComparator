@@ -3,7 +3,6 @@ package com.company.service;
 import com.company.model.*;
 import com.company.pojo.Hashes;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -11,9 +10,6 @@ import java.util.*;
 
 @Service
 public class ComparisonService {
-
-    @Autowired
-    private JsonService jsonService;
 
     private static final String KEY_EXPRESSION = "---color:";
     private static final String DEFAULT = "NoN";
@@ -23,45 +19,45 @@ public class ComparisonService {
 
     public ResponseView execute(ConfigFile config1, ConfigFile config2) {
         ResponseView result = new ResponseView();
-//        List<List<String>> metadata = getMetadata(config1, config2);
-//        List<List<String>> services = getArray(config1.getServices(), config2.getServices());
-//        List<List<String>> artifacts = getArtifacts(config1.getArtifacts(), config2.getArtifacts());
-//        List<List<String>> script = getArray(config1.getScript(), config2.getScript());
-//        List<List<String>> rpm = getArray(config1.getRpm(), config2.getRpm());
+        List<List<String>> metadata = getMetadata(config1, config2);
+        List<List<String>> services = getArray(config1.getServices(), config2.getServices());
+        List<List<String>> artifacts = getArtifacts(config1.getArtifacts(), config2.getArtifacts());
+        List<List<String>> script = getArray(config1.getScript(), config2.getScript());
+        List<List<String>> rpm = getArray(config1.getRpm(), config2.getRpm());
         List<List<String>> parameters = getParameter(config1, config2);
 
 
-        result.add("{");
+        result.add("{"+KEY_EXPRESSION+DEFAULT);
 
-//        metadata.get(0).forEach(result::add1);
-//        metadata.get(1).forEach(result::add2);
-//
-//        result.add("\"services\": [");
-//        services.get(0).forEach(result::add1);
-//        services.get(1).forEach(result::add2);
-//        result.add("],");
+        metadata.get(0).forEach(result::add1);
+        metadata.get(1).forEach(result::add2);
+
+        result.add("\"services\": ["+KEY_EXPRESSION+DEFAULT);
+        services.get(0).forEach(result::add1);
+        services.get(1).forEach(result::add2);
+        result.add("],"+KEY_EXPRESSION+DEFAULT);
 
 
-//        result.add("\"artifacts\": [");
-//        artifacts.get(0).forEach(result::add1);
-//        artifacts.get(1).forEach(result::add2);
-//        result.add("],");
+        result.add("\"artifacts\": ["+KEY_EXPRESSION+DEFAULT);
+        artifacts.get(0).forEach(result::add1);
+        artifacts.get(1).forEach(result::add2);
+        result.add("],"+KEY_EXPRESSION+DEFAULT);
 
-//        result.add("\"script\": [");
-//        script.get(0).forEach(result::add1);
-//        script.get(1).forEach(result::add2);
-//        result.add("],");
-//
-//        result.add("\"rpm\": [");
-//        rpm.get(0).forEach(result::add1);
-//        rpm.get(1).forEach(result::add2);
-//        result.add("],");
+        result.add("\"script\": ["+KEY_EXPRESSION+DEFAULT);
+        script.get(0).forEach(result::add1);
+        script.get(1).forEach(result::add2);
+        result.add("],"+KEY_EXPRESSION+DEFAULT);
 
-        result.add("\"parameters\": {");
+        result.add("\"rpm\": ["+KEY_EXPRESSION+DEFAULT);
+        rpm.get(0).forEach(result::add1);
+        rpm.get(1).forEach(result::add2);
+        result.add("],"+KEY_EXPRESSION+DEFAULT);
+
+        result.add("\"parameters\": {"+KEY_EXPRESSION+DEFAULT);
         parameters.get(0).forEach(result::add1);
         parameters.get(1).forEach(result::add2);
-        result.add("}");
-        result.add("}");
+        result.add("}"+KEY_EXPRESSION+DEFAULT);
+        result.add("}"+KEY_EXPRESSION+DEFAULT);
         return result;
     }
 
@@ -126,7 +122,33 @@ public class ComparisonService {
                 indexes.add(i);
             }
         }
-        return Collections.max(indexes);
+        if(!indexes.isEmpty()) {
+            return Collections.max(indexes);
+        } else {
+            return -1;
+        }
+    }
+
+    private void deleteLastComma(List<String> list) {
+        int replaceIndex = searchCommaAtEndWordIgnoreColor(list);
+        if(replaceIndex!=-1) {
+            String[] valueAndColor = list.get(replaceIndex).split(KEY_EXPRESSION);
+            list.set(replaceIndex, valueAndColor[0].substring(0, valueAndColor[0].length()-1)+KEY_EXPRESSION+valueAndColor[1]);
+        }
+    }
+
+    private int searchCommaAtEndWordIgnoreColor(List<String> list) {
+        List<Integer> indexes = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            if(list.get(i).matches("^.*,"+KEY_EXPRESSION+".*$")) {
+                indexes.add(i);
+            }
+        }
+        if(!indexes.isEmpty()) {
+            return Collections.max(indexes);
+        } else {
+            return -1;
+        }
     }
 
     private List<List<String>> getMetadata(ConfigFile config1, ConfigFile config2) {
@@ -146,7 +168,6 @@ public class ComparisonService {
         List<String> parameters1 = common.get(0);
         List<String> parameters2 = common.get(1);
         addToLists(parameters1, parameters2, "\""+"services"+"\" : {"+KEY_EXPRESSION+DEFAULT);
-        List<List<String>> services = new ArrayList<>();
         Dependencies<String,Map<String, String>> dependencies = getMapDependencies(config1.getParameters().getServices(), config2.getParameters().getServices());
         List<String> compared = dependencies.getCompared();
         List<String> additional1 = dependencies.getAdditional1();
@@ -163,13 +184,14 @@ public class ComparisonService {
         }
         for(String key:additional2) {
             List<List<String>> interimResult = additionalMapPrinter(dependencies.getMap2().get(key), key);
-            parameters1.addAll(interimResult.get(0));
-            parameters2.addAll(interimResult.get(1));
+            parameters1.addAll(interimResult.get(1));
+            parameters2.addAll(interimResult.get(0));
         }
         addToLists(parameters1, parameters2, "}"+KEY_EXPRESSION+DEFAULT);
+        deleteLastComma(parameters1);
+        deleteLastComma(parameters2);
         result.add(parameters1);
         result.add(parameters2);
-
         return result;
     }
 
@@ -217,7 +239,8 @@ public class ComparisonService {
             result1.add("\"" + key + "\" : \"" + map1.get(key) + "\","+KEY_EXPRESSION+NOTIFICATION);
             result2.add(" "+KEY_EXPRESSION+DEFAULT);
         }
-        result1.add("}"+KEY_EXPRESSION+NOTIFICATION);
+        deleteLastComma(result1);
+        result1.add("},"+KEY_EXPRESSION+NOTIFICATION);
         result2.add(" "+KEY_EXPRESSION+DEFAULT);
         result.add(result1);
         result.add(result2);
@@ -247,7 +270,9 @@ public class ComparisonService {
             result1.add(" "+KEY_EXPRESSION+DEFAULT);
             result2.add("\"" + key + "\" : \"" + map2.get(key) + "\","+KEY_EXPRESSION+NOTIFICATION);
         }
-        addToLists(result1, result2, "}"+KEY_EXPRESSION+DEFAULT);
+        deleteLastComma(result1);
+        deleteLastComma(result2);
+        addToLists(result1, result2, "},"+KEY_EXPRESSION+DEFAULT);
         result.add(result1);
         result.add(result2);
         return result;
@@ -329,24 +354,6 @@ public class ComparisonService {
         result.add(result1);
         result.add(result2);
         return result;
-    }
-
-    private <T> List<List<String>> getLists(T obj1, T obj2) {
-        List<List<String>> result = new ArrayList<>();
-        result.add(setColorEveryWhere(Arrays.asList(jsonService.getJsonPrettyString(obj1).replace("\r", "").split("\n")), DEFAULT));
-        result.add(setColorEveryWhere(Arrays.asList(jsonService.getJsonPrettyString(obj2).replace("\r", "").split("\n")), DEFAULT));
-        return result;
-    }
-
-    private <T> void comparisonObject(T obj1, T obj2, List<String> list) {
-        for(Field field: obj2.getClass().getDeclaredFields()) {
-            JsonProperty jsonProperty = field.getDeclaredAnnotation(JsonProperty.class);
-            if(jsonProperty.required()) {
-                equalsAndSetColor(obj1, obj2, field.getName(), list, jsonProperty.value(), ERROR);
-            } else {
-                equalsAndSetColor(obj1, obj2, field.getName(), list, jsonProperty.value(), WARNING);
-            }
-        }
     }
 
     private <T> void addToLists(List<T> list1, List<T> list2, T obj) {
