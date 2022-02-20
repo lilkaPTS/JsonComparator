@@ -11,7 +11,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Parameter {
-    @JsonProperty(value = "common", required = true)
+    @JsonProperty(value = "common")
     private Map<String, String> common;
     @JsonProperty(value = "services")
     private Map<String, Map<String,String>> services;
