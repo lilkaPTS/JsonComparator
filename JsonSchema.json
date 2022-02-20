@@ -72,9 +72,6 @@
           "additionalProperties": {"type": "object", "additionalProperties": { "type": "string" } }
         }
       },
-      "required": [
-        "common"
-      ],
       "additionalProperties": false
     },
     "rpm": {
