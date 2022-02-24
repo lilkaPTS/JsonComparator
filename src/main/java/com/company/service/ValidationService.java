@@ -69,6 +69,13 @@ public class ValidationService {
                 e.printStackTrace();
             }
         }
+        if(result.contains("$: null found, object expected")) {
+            for (int i = 0; i < result.size(); i++) {
+                if ("$: null found, object expected".equals(result.get(i))) {
+                    result.set(i, "$.Error type, file must be of type .json");
+                }
+            }
+        }
         return result;
     }
 
