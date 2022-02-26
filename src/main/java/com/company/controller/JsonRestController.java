@@ -27,13 +27,25 @@ public class JsonRestController {
     private ComparisonService comparisonService;
 
     @PostMapping("/validating")
-    public ResponseObject testPost(@RequestParam(name = "file1") MultipartFile multipartFile1, @RequestParam(name = "file2") MultipartFile multipartFile2)
+    public ResponseObject getComparedJson (@RequestParam(name = "file1") MultipartFile multipartFile1, @RequestParam(name = "file2") MultipartFile multipartFile2)
             throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         ResponseObject result = new ResponseObject();
         List<String> errors = new ArrayList<>();
-        errors.addAll(validationService.getErrors(multipartFile1));
-        errors.addAll(validationService.getErrors(multipartFile2));
+        List<String> errors1 = validationService.getErrors(multipartFile1);
+        List<String> errors2 = validationService.getErrors(multipartFile2);
+        if(!errors1.isEmpty()) {
+            errors.add("First file errors:");
+            for (int i = 0; i < errors1.size(); i++) {
+                errors.add(i+1 + ". " + errors1.get(i));
+            }
+        }
+        if(!errors2.isEmpty()) {
+            errors.add("Second file errors:");
+            for (int i = 0; i < errors2.size(); i++) {
+                errors.add(i+1 + ". " + errors2.get(i));
+            }
+        }
         result.setErrors(errors);
         if(errors.isEmpty()) {
             ConfigFile configFile1 = new ConfigFile(mapper.readValue(fileService.getFileContent(multipartFile1), JsonStructure.class));
