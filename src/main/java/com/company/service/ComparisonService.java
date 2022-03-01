@@ -98,16 +98,6 @@ public class ComparisonService {
                 artifactObject2List2.add(element);
             }
         }
-        for (ArtifactObject element : artifactObject2List1) {
-            for (int i = 0; i < fileMaxSize - ((ArtifactObject2)element).getFile().size(); i++) {
-                ((ArtifactObject2)element).addFile(" ");
-            }
-        }
-        for (ArtifactObject element : artifactObject2List2) {
-            for (int i = 0; i < fileMaxSize - ((ArtifactObject2)element).getFile().size(); i++) {
-                ((ArtifactObject2)element).addFile(" ");
-            }
-        }
         List<List<String>> artifactObject1Result = getArray(artifactObject1List1, artifactObject1List2, mvnMaxSize, fileMaxSize);
         List<List<String>> artifactObject2Result = getArray(artifactObject2List1, artifactObject2List2, mvnMaxSize, fileMaxSize);
         List<String> result1 = new ArrayList<>(artifactObject1Result.get(0));
@@ -211,11 +201,21 @@ public class ComparisonService {
                         addToLists(result1, result2, "],");
                         addToLists(result1, result2, "\"target_repository\" : \"" + ((ArtifactObject1) currentObject1).getTargetRepository() + "\"");
                         addToLists(result1, result2, "},");
-                    } else {
-                        List<List<String>> interimResult = colorDeterminer(currentObject1, currentObject2);
-                        result1.addAll(interimResult.get(0));
-                        result2.addAll(interimResult.get(1));
+                        continue;
+                    } else if(currentObject1 instanceof ArtifactObject2) {
+                        int size1 = ((ArtifactObject2) currentObject1).getFile().size();
+                        int size2 = ((ArtifactObject2) currentObject2).getFile().size();
+                        for (int i = 0; i < Math.abs(size1-size2); i++) {
+                            if(size1 < size2) {
+                                ((ArtifactObject2) currentObject1).addFile(" ");
+                            } else if(size1 > size2) {
+                                ((ArtifactObject2) currentObject2).addFile(" ");
+                            }
+                        }
                     }
+                    List<List<String>> interimResult = colorDeterminer(currentObject1, currentObject2);
+                    result1.addAll(interimResult.get(0));
+                    result2.addAll(interimResult.get(1));
                 }
             }
             result1.addAll(getAdditionalForPrint(additionalFromLeftList.keySet(), objectList1).get(0));
