@@ -26,16 +26,6 @@ public class ValidationService {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-
-    /**
-     * At first, let's take errors by JsonSchema.json, then checked
-     * founded errors to contains "null found" or "artifact is missing",
-     * if this errors not found, we will set ArrayList of JsonNode based
-     * Artifacts.class which is helper POJO to parse ArtifactObject1-2,
-     * then we will check each JsonNode to errors and added errors in result.
-     * @param inputFile file from upload form
-     * @return errors in input file schema
-     */
     public List<String> getErrors(MultipartFile inputFile) {
         List<String> result = new ArrayList<>();
         String fileTypeError = checkFileType(inputFile);
